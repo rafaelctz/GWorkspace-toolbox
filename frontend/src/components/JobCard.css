@@ -1,0 +1,277 @@
+.job-card {
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.job-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.job-card.status-pending {
+  border-left: 4px solid #6c757d;
+}
+
+.job-card.status-running {
+  border-left: 4px solid #0d6efd;
+}
+
+.job-card.status-completed {
+  border-left: 4px solid #198754;
+}
+
+.job-card.status-failed {
+  border-left: 4px solid #dc3545;
+}
+
+.job-card-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.job-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 120px;
+}
+
+.status-icon {
+  font-size: 1.2rem;
+}
+
+.status-text {
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.job-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.job-attribute {
+  font-size: 1rem;
+  color: #212529;
+  margin-bottom: 0.25rem;
+}
+
+.job-attribute strong {
+  color: #0d6efd;
+}
+
+.job-ou {
+  font-size: 0.85rem;
+  color: #6c757d;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.job-stats {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #212529;
+}
+
+.stat.success .stat-value {
+  color: #198754;
+}
+
+.stat.failed .stat-value {
+  color: #dc3545;
+}
+
+.expand-button {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: color 0.2s;
+}
+
+.expand-button:hover {
+  color: #212529;
+}
+
+.progress-bar-container {
+  position: relative;
+  height: 32px;
+  background: #e9ecef;
+  margin: 0 1.5rem 1rem;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0d6efd 0%, #0a58ca 100%);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #212529;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-shadow: 0 0 3px white;
+}
+
+.job-card-details {
+  padding: 1rem 1.5rem 1.5rem;
+  background: #f8f9fa;
+  border-top: 1px solid #dee2e6;
+}
+
+.detail-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.detail-row:last-child {
+  margin-bottom: 0;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #495057;
+  min-width: 100px;
+}
+
+.detail-value {
+  color: #212529;
+  word-break: break-all;
+}
+
+.detail-value.mono {
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  background: #e9ecef;
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+}
+
+.detail-row.error {
+  background: #f8d7da;
+  padding: 0.75rem;
+  border-radius: 4px;
+  border: 1px solid #f5c2c7;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.detail-row.error .detail-label {
+  color: #842029;
+}
+
+.detail-row.error .detail-value {
+  color: #58151c;
+}
+
+.user-counts {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+}
+
+.user-counts h4 {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.95rem;
+  color: #495057;
+}
+
+.counts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+
+.count-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+}
+
+.count-item.success {
+  background: #d1e7dd;
+  border-color: #badbcc;
+}
+
+.count-item.failed {
+  background: #f8d7da;
+  border-color: #f5c2c7;
+}
+
+.count-label {
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.count-value {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.count-item.success .count-value {
+  color: #0f5132;
+}
+
+.count-item.failed .count-value {
+  color: #842029;
+}
+
+@media (max-width: 768px) {
+  .job-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .job-stats {
+    width: 100%;
+    justify-content: space-around;
+  }
+
+  .expand-button {
+    align-self: flex-end;
+  }
+
+  .counts-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}

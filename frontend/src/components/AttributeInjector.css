@@ -215,3 +215,38 @@
 .ou-tree::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+/* Batch Mode Toggle */
+.batch-mode-toggle {
+  background: #f8f9fa;
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.toggle-text {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #212529;
+}
+
+.toggle-description {
+  margin: 0.5rem 0 0 32px;
+  font-size: 0.9rem;
+  color: #6c757d;
+  line-height: 1.5;
+}

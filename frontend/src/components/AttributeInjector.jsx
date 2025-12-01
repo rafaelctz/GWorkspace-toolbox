@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import axios from 'axios'
+import JobQueue from './JobQueue'
 import './AttributeInjector.css'
 
 function AttributeInjector({ apiBaseUrl }) {
@@ -12,6 +13,7 @@ function AttributeInjector({ apiBaseUrl }) {
   const [message, setMessage] = useState({ type: '', text: '' })
   const [attribute, setAttribute] = useState('')
   const [value, setValue] = useState('')
+  const [useBatchMode, setUseBatchMode] = useState(true)
 
   // Common user attributes
   const attributes = [
@@ -89,10 +91,15 @@ function AttributeInjector({ apiBaseUrl }) {
     console.log('Selected OUs:', selectedOus)
     console.log('Attribute:', attribute)
     console.log('Value:', value)
+    console.log('Batch Mode:', useBatchMode)
 
     try {
-      console.log('About to make POST request...')
-      const response = await axios.post(`${apiBaseUrl}/api/tools/inject-attribute`, {
+      const endpoint = useBatchMode
+        ? `${apiBaseUrl}/api/batch/inject-attribute`
+        : `${apiBaseUrl}/api/tools/inject-attribute`
+
+      console.log('About to make POST request to:', endpoint)
+      const response = await axios.post(endpoint, {
         ou_paths: selectedOus,
         attribute,
         value
@@ -100,9 +107,9 @@ function AttributeInjector({ apiBaseUrl }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        timeout: 300000, // 5 minute timeout for long operations
+        timeout: useBatchMode ? 60000 : 300000, // 1 min for batch, 5 min for sync
         validateStatus: function (status) {
-          return status >= 200 && status < 500; // Accept any status that's not a server error
+          return status >= 200 && status < 500;
         }
       })
 
@@ -110,10 +117,17 @@ function AttributeInjector({ apiBaseUrl }) {
       console.log('Response:', response)
       console.log('Response data:', response.data)
 
-      setMessage({
-        type: 'success',
-        text: `${t('tools.attributeInjector.success')} ${response.data.updated_count} ${t('tools.attributeInjector.usersUpdated')}`
-      })
+      if (useBatchMode) {
+        setMessage({
+          type: 'success',
+          text: `${t('tools.attributeInjector.batchJobCreated')} ${response.data.total_users} ${t('tools.attributeInjector.usersQueued')}`
+        })
+      } else {
+        setMessage({
+          type: 'success',
+          text: `${t('tools.attributeInjector.success')} ${response.data.updated_count} ${t('tools.attributeInjector.usersUpdated')}`
+        })
+      }
 
       // Clear form
       setSelectedOus([])
@@ -252,15 +266,42 @@ function AttributeInjector({ apiBaseUrl }) {
             />
           </div>
 
+          <div className="form-section batch-mode-toggle">
+            <label className="toggle-label">
+              <input
+                type="checkbox"
+                checked={useBatchMode}
+                onChange={(e) => setUseBatchMode(e.target.checked)}
+                className="toggle-checkbox"
+              />
+              <span className="toggle-text">
+                {t('tools.attributeInjector.useBatchMode')}
+              </span>
+            </label>
+            <p className="toggle-description">
+              {useBatchMode
+                ? t('tools.attributeInjector.batchModeDescription')
+                : t('tools.attributeInjector.syncModeDescription')
+              }
+            </p>
+          </div>
+
           <button
             type="submit"
             className="btn btn-primary"
             disabled={injecting || selectedOus.length === 0 || !attribute || !value}
           >
-            {injecting ? t('tools.attributeInjector.injecting') : t('tools.attributeInjector.injectButton')}
+            {injecting
+              ? t('tools.attributeInjector.injecting')
+              : useBatchMode
+                ? t('tools.attributeInjector.createBatchJob')
+                : t('tools.attributeInjector.injectButton')
+            }
           </button>
         </form>
       )}
+
+      {useBatchMode && <JobQueue apiBaseUrl={apiBaseUrl} />}
     </div>
   )
 }

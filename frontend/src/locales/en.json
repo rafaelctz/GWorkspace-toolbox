@@ -78,6 +78,42 @@
         "costCenter": "Cost Center",
         "buildingId": "Building ID",
         "manager": "Manager Email"
+      },
+      "useBatchMode": "Use Batch Mode (Recommended)",
+      "batchModeDescription": "Process in background with progress tracking. UI can be closed while job runs.",
+      "syncModeDescription": "Process immediately and wait for completion. UI must stay open.",
+      "createBatchJob": "Create Batch Job",
+      "batchJobCreated": "Batch job created successfully!",
+      "usersQueued": "users queued for processing"
+    },
+    "jobQueue": {
+      "title": "Batch Jobs",
+      "loading": "Loading jobs...",
+      "noJobs": "No batch jobs yet. Create your first job above!",
+      "activeJobs": "Active",
+      "organizationalUnits": "OUs",
+      "totalUsers": "Total",
+      "progress": "Progress",
+      "successful": "Success",
+      "failed": "Failed",
+      "usersProcessed": "users processed",
+      "jobId": "Job ID",
+      "created": "Created",
+      "started": "Started",
+      "completed": "Completed",
+      "error": "Error",
+      "userBreakdown": "User Status Breakdown",
+      "status": {
+        "pending": "Pending",
+        "running": "Running",
+        "completed": "Completed",
+        "failed": "Failed"
+      },
+      "userStatus": {
+        "pending": "Pending",
+        "processing": "Processing",
+        "success": "Success",
+        "failed": "Failed"
       }
     }
   },

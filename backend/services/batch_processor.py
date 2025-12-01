@@ -127,6 +127,9 @@ class BatchProcessor:
 
             # Process each batch
             for batch_number, user_batch in enumerate(batches, start=1):
+                # Refresh credentials before each batch to prevent token expiration
+                self._ensure_valid_credentials()
+
                 self._process_batch(
                     job=job,
                     batch_number=batch_number,
@@ -161,6 +164,28 @@ class BatchProcessor:
             batches.append(users[i:i + self.BATCH_SIZE])
         return batches
 
+    def _ensure_valid_credentials(self) -> None:
+        """
+        Ensure credentials are valid and refresh if needed.
+        This prevents token expiration during long-running jobs.
+        """
+        try:
+            # For service accounts, credentials don't expire but we can refresh the service
+            if hasattr(self.google_service, 'creds') and self.google_service.creds:
+                # Check if credentials have a refresh method
+                if hasattr(self.google_service.creds, 'refresh') and hasattr(self.google_service.creds, 'expired'):
+                    # For OAuth credentials, check if expired and refresh
+                    if self.google_service.creds.expired and self.google_service.creds.refresh_token:
+                        from google.auth.transport.requests import Request
+                        self.google_service.creds.refresh(Request())
+                # For service accounts with delegation, recreate credentials
+                elif hasattr(self.google_service.creds, 'with_subject'):
+                    # Service account credentials - these are automatically refreshed by the library
+                    pass
+        except Exception as e:
+            # Log but don't fail - credentials might still be valid
+            print(f"Warning: Could not refresh credentials: {str(e)}")
+
     def _process_batch(
         self,
         job: BatchJob,
@@ -189,12 +214,8 @@ class BatchProcessor:
         # Process each user in the batch
         for user in users:
             try:
-                # Mark user as processing
-                self.user_cache_service.update_user_status(
-                    job_uuid=job.job_uuid,
-                    email=user.email,
-                    status='processing'
-                )
+                # Mark user as processing (no commit yet)
+                user.status = 'processing'
 
                 # Inject attribute
                 self._inject_attribute_to_user(
@@ -204,11 +225,8 @@ class BatchProcessor:
                 )
 
                 # Mark user as success
-                self.user_cache_service.update_user_status(
-                    job_uuid=job.job_uuid,
-                    email=user.email,
-                    status='success'
-                )
+                user.status = 'success'
+                user.error_message = None
 
                 # Update job counters
                 job.successful_users += 1
@@ -216,24 +234,23 @@ class BatchProcessor:
             except Exception as e:
                 # Mark user as failed
                 error_msg = str(e)[:200]  # Limit error message length
-                self.user_cache_service.update_user_status(
-                    job_uuid=job.job_uuid,
-                    email=user.email,
-                    status='failed',
-                    error_message=error_msg
-                )
+                user.status = 'failed'
+                user.error_message = error_msg
 
                 # Update job counters
                 job.failed_users += 1
 
             # Update progress
             job.processed_users += 1
-            job.progress_percentage = (job.processed_users / job.total_users) * 100
-            self.db.commit()
+
+        # Calculate progress percentage
+        job.progress_percentage = (job.processed_users / job.total_users) * 100
 
         # Mark batch as completed
         batch_op.status = 'completed'
         batch_op.completed_at = datetime.utcnow()
+
+        # Single commit for the entire batch
         self.db.commit()
 
     def _inject_attribute_to_user(
@@ -256,20 +273,6 @@ class BatchProcessor:
         try:
             # Handle complex organization attributes
             if attribute in ['title', 'department', 'employeeType', 'costCenter']:
-                # Fetch full user profile
-                user_full = self.google_service.service.users().get(
-                    userKey=user_email,
-                    projection='full'
-                ).execute()
-
-                # Get existing organizations or create new one
-                existing_orgs = user_full.get('organizations', [])
-                if not existing_orgs:
-                    existing_orgs = [{}]
-
-                # Update the primary organization
-                org = existing_orgs[0]
-
                 # Map attribute to correct field
                 field_mapping = {
                     'title': 'title',
@@ -278,10 +281,13 @@ class BatchProcessor:
                     'costCenter': 'costCenter'
                 }
 
-                org[field_mapping[attribute]] = value
-                org['primary'] = True
-
-                update_body = {'organizations': existing_orgs}
+                # Create organization object directly without fetching
+                update_body = {
+                    'organizations': [{
+                        field_mapping[attribute]: value,
+                        'primary': True
+                    }]
+                }
 
             elif attribute == 'buildingId':
                 # Handle location/building

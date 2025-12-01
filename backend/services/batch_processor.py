@@ -89,30 +89,38 @@ class BatchProcessor:
         Returns:
             Dict with processing results
         """
+        print(f"[BatchProcessor] Starting process_job for {job_uuid}")
+
         # Get job
         job = self.db.query(BatchJob).filter(
             BatchJob.job_uuid == job_uuid
         ).first()
 
         if not job:
+            print(f"[BatchProcessor] ERROR: Job {job_uuid} not found")
             raise Exception(f"Job {job_uuid} not found")
 
         if job.status != 'pending':
+            print(f"[BatchProcessor] ERROR: Job {job_uuid} status is {job.status}, not pending")
             raise Exception(f"Job {job_uuid} is not in pending state")
 
         try:
             # Mark job as running
+            print(f"[BatchProcessor] Marking job as running")
             job.status = 'running'
             job.started_at = datetime.utcnow()
             self.db.commit()
 
             # Get all pending users
+            print(f"[BatchProcessor] Fetching pending users")
             users = self.user_cache_service.get_cached_users(
                 job_uuid=job_uuid,
                 status='pending'
             )
+            print(f"[BatchProcessor] Found {len(users)} pending users")
 
             if not users:
+                print(f"[BatchProcessor] No users to process, marking as completed")
                 job.status = 'completed'
                 job.completed_at = datetime.utcnow()
                 job.progress_percentage = 100.0
@@ -124,24 +132,41 @@ class BatchProcessor:
 
             # Split users into batches
             batches = self._create_batches(users)
+            print(f"[BatchProcessor] Created {len(batches)} batches of up to {self.BATCH_SIZE} users each")
 
             # Process each batch
             for batch_number, user_batch in enumerate(batches, start=1):
-                # Refresh credentials before each batch to prevent token expiration
-                self._ensure_valid_credentials()
+                print(f"[BatchProcessor] ========== Processing batch {batch_number}/{len(batches)} ==========")
 
-                self._process_batch(
-                    job=job,
-                    batch_number=batch_number,
-                    users=user_batch
-                )
+                # Refresh credentials before each batch to prevent token expiration
+                print(f"[BatchProcessor] Refreshing credentials before batch {batch_number}")
+                try:
+                    self._ensure_valid_credentials()
+                    print(f"[BatchProcessor] Credentials refreshed successfully")
+                except Exception as cred_error:
+                    print(f"[BatchProcessor] ERROR refreshing credentials: {str(cred_error)}")
+                    raise
+
+                print(f"[BatchProcessor] Processing {len(user_batch)} users in batch {batch_number}")
+                try:
+                    self._process_batch(
+                        job=job,
+                        batch_number=batch_number,
+                        users=user_batch
+                    )
+                    print(f"[BatchProcessor] Batch {batch_number} completed successfully")
+                except Exception as batch_error:
+                    print(f"[BatchProcessor] ERROR processing batch {batch_number}: {str(batch_error)}")
+                    raise
 
             # Mark job as completed
+            print(f"[BatchProcessor] All batches completed, marking job as completed")
             job.status = 'completed'
             job.completed_at = datetime.utcnow()
             job.progress_percentage = 100.0
             self.db.commit()
 
+            print(f"[BatchProcessor] Job completed: {job.successful_users} successful, {job.failed_users} failed")
             return {
                 'status': 'completed',
                 'total_users': job.total_users,
@@ -151,6 +176,9 @@ class BatchProcessor:
 
         except Exception as e:
             # Mark job as failed
+            print(f"[BatchProcessor] FATAL ERROR: {str(e)}")
+            import traceback
+            traceback.print_exc()
             job.status = 'failed'
             job.error_message = str(e)
             job.completed_at = datetime.utcnow()
@@ -169,22 +197,38 @@ class BatchProcessor:
         Ensure credentials are valid and refresh if needed.
         This prevents token expiration during long-running jobs.
         """
+        print(f"[BatchProcessor] Checking credential validity...")
         try:
             # For service accounts, credentials don't expire but we can refresh the service
             if hasattr(self.google_service, 'creds') and self.google_service.creds:
+                print(f"[BatchProcessor] Credentials object exists: {type(self.google_service.creds)}")
+
                 # Check if credentials have a refresh method
                 if hasattr(self.google_service.creds, 'refresh') and hasattr(self.google_service.creds, 'expired'):
+                    print(f"[BatchProcessor] OAuth credentials detected")
                     # For OAuth credentials, check if expired and refresh
-                    if self.google_service.creds.expired and self.google_service.creds.refresh_token:
-                        from google.auth.transport.requests import Request
-                        self.google_service.creds.refresh(Request())
+                    if self.google_service.creds.expired:
+                        print(f"[BatchProcessor] Credentials expired, refreshing...")
+                        if self.google_service.creds.refresh_token:
+                            from google.auth.transport.requests import Request
+                            self.google_service.creds.refresh(Request())
+                            print(f"[BatchProcessor] OAuth credentials refreshed successfully")
+                        else:
+                            print(f"[BatchProcessor] WARNING: No refresh token available")
+                    else:
+                        print(f"[BatchProcessor] OAuth credentials still valid")
                 # For service accounts with delegation, recreate credentials
                 elif hasattr(self.google_service.creds, 'with_subject'):
-                    # Service account credentials - these are automatically refreshed by the library
-                    pass
+                    print(f"[BatchProcessor] Service account credentials detected (auto-refreshed by library)")
+                else:
+                    print(f"[BatchProcessor] Unknown credential type")
+            else:
+                print(f"[BatchProcessor] WARNING: No credentials object found!")
         except Exception as e:
             # Log but don't fail - credentials might still be valid
-            print(f"Warning: Could not refresh credentials: {str(e)}")
+            print(f"[BatchProcessor] WARNING: Could not refresh credentials: {str(e)}")
+            import traceback
+            traceback.print_exc()
 
     def _process_batch(
         self,
@@ -200,6 +244,8 @@ class BatchProcessor:
             batch_number: The batch number
             users: List of CachedUser objects to process
         """
+        print(f"[BatchProcessor] _process_batch started for batch {batch_number}")
+
         # Create batch operation record
         batch_op = BatchOperation(
             job_uuid=job.job_uuid,
@@ -210,9 +256,12 @@ class BatchProcessor:
         )
         self.db.add(batch_op)
         self.db.commit()
+        print(f"[BatchProcessor] Batch operation record created")
 
         # Process each user in the batch
-        for user in users:
+        success_count = 0
+        fail_count = 0
+        for idx, user in enumerate(users, 1):
             try:
                 # Mark user as processing (no commit yet)
                 user.status = 'processing'
@@ -230,6 +279,7 @@ class BatchProcessor:
 
                 # Update job counters
                 job.successful_users += 1
+                success_count += 1
 
             except Exception as e:
                 # Mark user as failed
@@ -239,9 +289,15 @@ class BatchProcessor:
 
                 # Update job counters
                 job.failed_users += 1
+                fail_count += 1
+                print(f"[BatchProcessor] User {user.email} failed: {error_msg}")
 
             # Update progress
             job.processed_users += 1
+
+            # Log progress every 10 users
+            if idx % 10 == 0:
+                print(f"[BatchProcessor] Batch {batch_number}: Processed {idx}/{len(users)} users")
 
         # Calculate progress percentage
         job.progress_percentage = (job.processed_users / job.total_users) * 100
@@ -250,8 +306,13 @@ class BatchProcessor:
         batch_op.status = 'completed'
         batch_op.completed_at = datetime.utcnow()
 
+        print(f"[BatchProcessor] Batch {batch_number} summary: {success_count} successful, {fail_count} failed")
+        print(f"[BatchProcessor] Overall progress: {job.processed_users}/{job.total_users} ({job.progress_percentage:.1f}%)")
+
         # Single commit for the entire batch
+        print(f"[BatchProcessor] Committing batch {batch_number} to database...")
         self.db.commit()
+        print(f"[BatchProcessor] Batch {batch_number} committed successfully")
 
     def _inject_attribute_to_user(
         self,

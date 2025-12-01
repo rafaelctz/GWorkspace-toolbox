@@ -605,17 +605,27 @@ async def list_batch_jobs(limit: int = 50, db: Session = Depends(get_db)):
 def _process_batch_job(job_uuid: str):
     """Background task to process a batch job"""
     from database.session import SessionLocal
+    import traceback
 
+    print(f"[_process_batch_job] Starting background task for job {job_uuid}")
     db = SessionLocal()
     try:
         # Need to get google_service from global or recreate it
         global google_service
         if google_service:
+            print(f"[_process_batch_job] Google service available, creating batch processor")
             processor = BatchProcessor(db, google_service)
+            print(f"[_process_batch_job] Calling process_job...")
             processor.process_job(job_uuid)
+            print(f"[_process_batch_job] process_job completed successfully")
+        else:
+            print(f"[_process_batch_job] ERROR: google_service is None!")
+            raise Exception("Google service not available")
     except Exception as e:
-        print(f"❌ Error processing batch job {job_uuid}: {str(e)}")
+        print(f"[_process_batch_job] ❌ EXCEPTION in background task for job {job_uuid}: {str(e)}")
+        traceback.print_exc()
     finally:
+        print(f"[_process_batch_job] Closing database session for job {job_uuid}")
         db.close()
 
 

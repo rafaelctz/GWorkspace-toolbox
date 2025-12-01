@@ -340,49 +340,6 @@ async def download_aliases(file_path: str):
     )
 
 
-@app.get("/api/tools/organizational-units")
-async def get_organizational_units():
-    """Get all organizational units from Google Workspace"""
-    global google_service
-
-    if google_service is None or not google_service.is_authenticated():
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
-    try:
-        org_units = google_service.get_organizational_units()
-        return {"organizational_units": org_units}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/api/tools/inject-attribute")
-async def inject_attribute(request: dict):
-    """Inject an attribute to users in selected OUs"""
-    global google_service
-
-    if google_service is None or not google_service.is_authenticated():
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
-    ou_paths = request.get("ou_paths", [])
-    attribute = request.get("attribute")
-    value = request.get("value")
-
-    if not ou_paths:
-        raise HTTPException(status_code=400, detail="At least one OU path is required")
-    if not attribute:
-        raise HTTPException(status_code=400, detail="Attribute name is required")
-    if value is None or value == "":
-        raise HTTPException(status_code=400, detail="Value is required")
-
-    try:
-        result = google_service.inject_attribute_to_users(ou_paths, attribute, value)
-        return {
-            "success": True,
-            "message": f"Attribute injected successfully",
-            **result
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 if __name__ == "__main__":

@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import AuthPanel from './components/AuthPanel'
-import Sidebar from './components/Sidebar'
 import ToolsPanel from './components/ToolsPanel'
-import AttributeInjector from './components/AttributeInjector'
 import LanguageSelector from './components/LanguageSelector'
 import axios from 'axios'
 import './App.css'
@@ -12,7 +10,6 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 function App() {
   const { t } = useTranslation()
-  const [currentTool, setCurrentTool] = useState('alias-extractor')
   const [authStatus, setAuthStatus] = useState({
     authenticated: false,
     adminEmail: null,
@@ -47,7 +44,7 @@ function App() {
     checkAuthStatus()
   }, [])
 
-  const renderTool = () => {
+  const renderContent = () => {
     if (!authStatus.authenticated) {
       return (
         <div className="auth-required-message">
@@ -61,51 +58,36 @@ function App() {
       )
     }
 
-    switch (currentTool) {
-      case 'alias-extractor':
-        return <ToolsPanel authenticated={authStatus.authenticated} apiBaseUrl={API_BASE_URL} />
-      case 'attribute-injector':
-        return <AttributeInjector apiBaseUrl={API_BASE_URL} />
-      default:
-        return <div>{t('common.error')}: Tool not found</div>
-    }
+    return <ToolsPanel authenticated={authStatus.authenticated} apiBaseUrl={API_BASE_URL} />
   }
 
   return (
-    <div className="app app-with-sidebar">
-      <Sidebar
-        currentTool={currentTool}
-        onToolChange={setCurrentTool}
-        authStatus={authStatus}
-      />
+    <div className="app">
+      <header className="app-header">
+        <div className="header-content">
+          <h1>{t('app.title')}</h1>
+          <p className="subtitle">{t('app.subtitle')}</p>
+        </div>
+        <div className="header-actions">
+          {authStatus.authenticated && (
+            <div className="auth-status">
+              <span className="status-indicator active"></span>
+              <span className="auth-email">{authStatus.adminEmail}</span>
+            </div>
+          )}
+          <LanguageSelector />
+        </div>
+      </header>
 
-      <div className="app-content">
-        <header className="app-header">
-          <div className="header-content">
-            <h1>{t('app.title')}</h1>
-            <p className="subtitle">{t('app.subtitle')}</p>
-          </div>
-          <div className="header-actions">
-            {authStatus.authenticated && (
-              <div className="auth-status">
-                <span className="status-indicator active"></span>
-                <span className="auth-email">{authStatus.adminEmail}</span>
-              </div>
-            )}
-            <LanguageSelector />
-          </div>
-        </header>
+      <main className="app-main">
+        <div className="container">
+          {renderContent()}
+        </div>
+      </main>
 
-        <main className="app-main">
-          <div className="container">
-            {renderTool()}
-          </div>
-        </main>
-
-        <footer className="app-footer">
-          <p>DEA Toolbox v1.0.0 - Tools for AD Administrators</p>
-        </footer>
-      </div>
+      <footer className="app-footer">
+        <p>DEA Toolbox Light v1.0.0 - Alias Extractor for Google Workspace</p>
+      </footer>
     </div>
   )
 }

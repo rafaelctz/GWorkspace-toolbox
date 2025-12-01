@@ -9,6 +9,7 @@ from googleapiclient.errors import HttpError
 from database.models import BatchJob, CachedUser, BatchOperation
 from services.google_workspace import GoogleWorkspaceService
 from services.user_cache_service import UserCacheService
+from services.api_retry import APIRetryHandler
 
 
 class BatchProcessor:
@@ -20,6 +21,7 @@ class BatchProcessor:
         self.db = db
         self.google_service = google_service
         self.user_cache_service = UserCacheService(db, google_service)
+        self.retry_handler = APIRetryHandler(max_retries=5, base_delay=1.0)
 
     def create_job(
         self,
@@ -373,11 +375,14 @@ class BatchProcessor:
                 # For any other standard attribute, use directly
                 update_body = {attribute: value}
 
-            # Update the user
-            self.google_service.service.users().update(
-                userKey=user_email,
-                body=update_body
-            ).execute()
+            # Update the user with retry logic for SSL and transient errors
+            def execute_update():
+                return self.google_service.service.users().update(
+                    userKey=user_email,
+                    body=update_body
+                ).execute()
+
+            self.retry_handler.execute_with_retry(execute_update)
 
         except HttpError as error:
             raise Exception(f"Google API error: {str(error)}")

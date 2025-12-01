@@ -11,6 +11,7 @@ import json
 from services.google_workspace import GoogleWorkspaceService
 from services.credential_service import CredentialService
 from services.batch_processor import BatchProcessor
+from services.service_manager import ServiceManager
 from database.session import init_db, get_db
 
 load_dotenv()
@@ -68,6 +69,10 @@ async def startup_event():
                 except Exception as e:
                     print(f"⚠️  Service account authentication failed: {str(e)}")
                     google_service = None
+
+            # Initialize ServiceManager with the service
+            ServiceManager.initialize(google_service)
+            print(f"✓ ServiceManager initialized")
 
             print(f"✓ Credentials restored from database ({active_cred.credential_type})")
             if google_service and google_service.is_authenticated():
@@ -136,12 +141,13 @@ async def database_health(db: Session = Depends(get_db)):
 @app.get("/api/status", response_model=StatusResponse)
 async def get_status():
     """Check if Google Workspace API is authenticated"""
-    global google_service
-
-    if google_service is None or not google_service.is_authenticated():
-        return StatusResponse(authenticated=False)
-
     try:
+        # Use ServiceManager to get service (auto-recovers if None)
+        google_service = ServiceManager.get_service()
+
+        if not google_service.is_authenticated():
+            return StatusResponse(authenticated=False)
+
         info = google_service.get_admin_info()
         return StatusResponse(
             authenticated=True,
@@ -234,6 +240,9 @@ async def authenticate(db: Session = Depends(get_db)):
                 active_cred.domain = info.get("domain")
                 db.commit()
 
+        # Initialize ServiceManager with authenticated service
+        ServiceManager.initialize(google_service)
+
         return {
             "message": "Authentication successful",
             "admin_email": info.get("email"),
@@ -242,6 +251,7 @@ async def authenticate(db: Session = Depends(get_db)):
 
     except FileNotFoundError as e:
         google_service = None
+        ServiceManager.clear()
         raise HTTPException(
             status_code=400,
             detail="Credentials file not found. Please upload credentials first."
@@ -249,6 +259,7 @@ async def authenticate(db: Session = Depends(get_db)):
     except Exception as e:
         # Reset service on failure
         google_service = None
+        ServiceManager.clear()
 
         error_msg = str(e)
         if "invalid_grant" in error_msg.lower():
@@ -297,6 +308,9 @@ async def authenticate_service_account(request: dict, db: Session = Depends(get_
             active_cred.domain = domain
             db.commit()
 
+        # Initialize ServiceManager with authenticated service
+        ServiceManager.initialize(google_service)
+
         return {
             "message": "Service account authentication successful",
             "admin_email": delegated_email,
@@ -306,6 +320,7 @@ async def authenticate_service_account(request: dict, db: Session = Depends(get_
 
     except FileNotFoundError as e:
         google_service = None
+        ServiceManager.clear()
         raise HTTPException(
             status_code=400,
             detail="Service account credentials file not found. Please upload credentials first."
@@ -313,6 +328,7 @@ async def authenticate_service_account(request: dict, db: Session = Depends(get_
     except Exception as e:
         # Reset service on failure
         google_service = None
+        ServiceManager.clear()
 
         error_msg = str(e)
         if "domain-wide delegation" in error_msg.lower() or "delegated" in error_msg.lower():
@@ -373,6 +389,7 @@ async def logout(db: Session = Depends(get_db)):
             db.commit()
 
         google_service = None
+        ServiceManager.clear()
 
         return {"message": "Logged out successfully"}
 
@@ -402,6 +419,7 @@ async def delete_credentials(db: Session = Depends(get_db)):
 
         # Reset service
         google_service = None
+        ServiceManager.clear()
 
         return {"message": "Credentials deleted successfully"}
 
@@ -437,15 +455,15 @@ async def credentials_status(db: Session = Depends(get_db)):
 @app.post("/api/tools/extract-aliases", response_model=AliasExtractionResponse)
 async def extract_aliases():
     """Extract all users with aliases from Google Workspace"""
-    global google_service
-
-    if google_service is None or not google_service.is_authenticated():
-        raise HTTPException(
-            status_code=401,
-            detail="Not authenticated. Please authenticate first."
-        )
-
     try:
+        google_service = ServiceManager.get_service()
+
+        if not google_service.is_authenticated():
+            raise HTTPException(
+                status_code=401,
+                detail="Not authenticated. Please authenticate first."
+            )
+
         result = google_service.extract_aliases_to_csv()
 
         return AliasExtractionResponse(
@@ -476,12 +494,12 @@ async def download_aliases(file_path: str):
 @app.get("/api/tools/organizational-units")
 async def get_organizational_units():
     """Get all organizational units from Google Workspace"""
-    global google_service
-
-    if google_service is None or not google_service.is_authenticated():
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
     try:
+        google_service = ServiceManager.get_service()
+
+        if not google_service.is_authenticated():
+            raise HTTPException(status_code=401, detail="Not authenticated")
+
         org_units = google_service.get_organizational_units()
         return {"organizational_units": org_units}
     except Exception as e:
@@ -491,23 +509,23 @@ async def get_organizational_units():
 @app.post("/api/tools/inject-attribute")
 async def inject_attribute(request: dict):
     """Inject an attribute to users in selected OUs (synchronous - legacy)"""
-    global google_service
-
-    if google_service is None or not google_service.is_authenticated():
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
-    ou_paths = request.get("ou_paths", [])
-    attribute = request.get("attribute")
-    value = request.get("value")
-
-    if not ou_paths:
-        raise HTTPException(status_code=400, detail="At least one OU path is required")
-    if not attribute:
-        raise HTTPException(status_code=400, detail="Attribute name is required")
-    if value is None or value == "":
-        raise HTTPException(status_code=400, detail="Value is required")
-
     try:
+        google_service = ServiceManager.get_service()
+
+        if not google_service.is_authenticated():
+            raise HTTPException(status_code=401, detail="Not authenticated")
+
+        ou_paths = request.get("ou_paths", [])
+        attribute = request.get("attribute")
+        value = request.get("value")
+
+        if not ou_paths:
+            raise HTTPException(status_code=400, detail="At least one OU path is required")
+        if not attribute:
+            raise HTTPException(status_code=400, detail="Attribute name is required")
+        if value is None or value == "":
+            raise HTTPException(status_code=400, detail="Value is required")
+
         result = google_service.inject_attribute_to_users(ou_paths, attribute, value)
         return {
             "success": True,
@@ -526,23 +544,23 @@ async def batch_inject_attribute(request: dict, background_tasks: BackgroundTask
     Create a batch job to inject attribute asynchronously
     Returns immediately with job UUID for status tracking
     """
-    global google_service
-
-    if google_service is None or not google_service.is_authenticated():
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
-    ou_paths = request.get("ou_paths", [])
-    attribute = request.get("attribute")
-    value = request.get("value")
-
-    if not ou_paths:
-        raise HTTPException(status_code=400, detail="At least one OU path is required")
-    if not attribute:
-        raise HTTPException(status_code=400, detail="Attribute name is required")
-    if value is None or value == "":
-        raise HTTPException(status_code=400, detail="Value is required")
-
     try:
+        google_service = ServiceManager.get_service()
+
+        if not google_service.is_authenticated():
+            raise HTTPException(status_code=401, detail="Not authenticated")
+
+        ou_paths = request.get("ou_paths", [])
+        attribute = request.get("attribute")
+        value = request.get("value")
+
+        if not ou_paths:
+            raise HTTPException(status_code=400, detail="At least one OU path is required")
+        if not attribute:
+            raise HTTPException(status_code=400, detail="Attribute name is required")
+        if value is None or value == "":
+            raise HTTPException(status_code=400, detail="Value is required")
+
         # Create batch processor
         processor = BatchProcessor(db, google_service)
 
@@ -573,12 +591,12 @@ async def batch_inject_attribute(request: dict, background_tasks: BackgroundTask
 @app.get("/api/batch/jobs/{job_uuid}")
 async def get_batch_job_status(job_uuid: str, db: Session = Depends(get_db)):
     """Get status and progress of a specific batch job"""
-    global google_service
-
-    if google_service is None:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
     try:
+        google_service = ServiceManager.get_service()
+
+        if not google_service.is_authenticated():
+            raise HTTPException(status_code=401, detail="Not authenticated")
+
         processor = BatchProcessor(db, google_service)
         status = processor.get_job_status(job_uuid)
         return status
@@ -589,12 +607,12 @@ async def get_batch_job_status(job_uuid: str, db: Session = Depends(get_db)):
 @app.get("/api/batch/jobs")
 async def list_batch_jobs(limit: int = 50, db: Session = Depends(get_db)):
     """List all batch jobs ordered by creation date"""
-    global google_service
-
-    if google_service is None:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
     try:
+        google_service = ServiceManager.get_service()
+
+        if not google_service.is_authenticated():
+            raise HTTPException(status_code=401, detail="Not authenticated")
+
         processor = BatchProcessor(db, google_service)
         jobs = processor.get_all_jobs(limit=limit)
         return {"jobs": jobs}
@@ -605,12 +623,12 @@ async def list_batch_jobs(limit: int = 50, db: Session = Depends(get_db)):
 @app.get("/api/batch/jobs/{job_uuid}/failed-users")
 async def get_failed_users(job_uuid: str, db: Session = Depends(get_db)):
     """Get all failed users for a specific job with their error messages"""
-    global google_service
-
-    if google_service is None:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
     try:
+        google_service = ServiceManager.get_service()
+
+        if not google_service.is_authenticated():
+            raise HTTPException(status_code=401, detail="Not authenticated")
+
         processor = BatchProcessor(db, google_service)
         failed_users = processor.get_failed_users(job_uuid)
         return {"failed_users": failed_users, "count": len(failed_users)}
@@ -626,17 +644,19 @@ def _process_batch_job(job_uuid: str):
     print(f"[_process_batch_job] Starting background task for job {job_uuid}")
     db = SessionLocal()
     try:
-        # Need to get google_service from global or recreate it
-        global google_service
-        if google_service:
-            print(f"[_process_batch_job] Google service available, creating batch processor")
+        # Use ServiceManager to get service (auto-recovers if None)
+        print(f"[_process_batch_job] Getting service from ServiceManager...")
+        google_service = ServiceManager.get_service()
+
+        if google_service and google_service.is_authenticated():
+            print(f"[_process_batch_job] Google service available and authenticated, creating batch processor")
             processor = BatchProcessor(db, google_service)
             print(f"[_process_batch_job] Calling process_job...")
             processor.process_job(job_uuid)
             print(f"[_process_batch_job] process_job completed successfully")
         else:
-            print(f"[_process_batch_job] ERROR: google_service is None!")
-            raise Exception("Google service not available")
+            print(f"[_process_batch_job] ERROR: Service not authenticated!")
+            raise Exception("Google service not available or not authenticated")
     except Exception as e:
         print(f"[_process_batch_job] ❌ EXCEPTION in background task for job {job_uuid}: {str(e)}")
         traceback.print_exc()

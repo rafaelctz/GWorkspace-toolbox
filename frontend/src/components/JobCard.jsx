@@ -9,6 +9,7 @@ function JobCard({ job, apiBaseUrl }) {
   const [failedUsers, setFailedUsers] = useState([])
   const [loadingFailed, setLoadingFailed] = useState(false)
   const [showFailedUsers, setShowFailedUsers] = useState(false)
+  const [restarting, setRestarting] = useState(false)
 
   const getStatusClass = (status) => {
     switch (status) {
@@ -22,10 +23,10 @@ function JobCard({ job, apiBaseUrl }) {
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'pending': return '⏳'
-      case 'running': return '⚙️'
-      case 'completed': return '✅'
-      case 'failed': return '❌'
+      case 'pending': return '◷'
+      case 'running': return '●'
+      case 'completed': return '✓'
+      case 'failed': return '✗'
       default: return '•'
     }
   }
@@ -64,6 +65,22 @@ function JobCard({ job, apiBaseUrl }) {
       console.error('Failed to load failed users:', error)
     } finally {
       setLoadingFailed(false)
+    }
+  }
+
+  const restartJob = async (e) => {
+    e.stopPropagation()
+    if (restarting) return
+
+    setRestarting(true)
+    try {
+      await axios.post(`${apiBaseUrl}/api/batch/jobs/${job.job_uuid}/restart`)
+      // Job will automatically refresh via polling
+    } catch (error) {
+      console.error('Failed to restart job:', error)
+      alert(error.response?.data?.detail || 'Failed to restart job')
+    } finally {
+      setRestarting(false)
     }
   }
 
@@ -184,6 +201,33 @@ function JobCard({ job, apiBaseUrl }) {
                   <span className="count-value">{job.user_status_counts.failed || 0}</span>
                 </div>
               </div>
+            </div>
+          )}
+
+          {(job.status === 'pending' || job.status === 'failed') && (
+            <div className="job-actions">
+              <button
+                onClick={restartJob}
+                className="btn-restart"
+                disabled={restarting}
+              >
+                {restarting ? 'Restarting...' : 'Restart Job'}
+              </button>
+            </div>
+          )}
+
+          {job.status === 'completed' && job.job_type === 'alias_extraction' && job.file_path && (
+            <div className="job-actions">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  const downloadUrl = `${apiBaseUrl}/api/tools/download-aliases?file_path=${encodeURIComponent(job.file_path)}`
+                  window.open(downloadUrl, '_blank')
+                }}
+                className="btn-download"
+              >
+                Download CSV
+              </button>
             </div>
           )}
 

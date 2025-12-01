@@ -18,6 +18,7 @@ class ServiceManager:
     _token_path: str = None
     _delegated_email: str = None
     _credential_type: str = None
+    _logged_out: bool = False  # Flag to prevent auto-restore after logout
 
     @classmethod
     def initialize(cls, google_service: GoogleWorkspaceService):
@@ -26,6 +27,7 @@ class ServiceManager:
         if google_service:
             cls._credentials_path = os.getenv("GOOGLE_CREDENTIALS_PATH", "./credentials.json")
             cls._token_path = os.getenv("GOOGLE_TOKEN_PATH", "./token.json")
+            cls._logged_out = False  # Clear logout flag on new login
 
     @classmethod
     def get_service(cls) -> GoogleWorkspaceService:
@@ -41,6 +43,10 @@ class ServiceManager:
         # If service exists and is authenticated, return it
         if cls._instance and cls._instance.is_authenticated():
             return cls._instance
+
+        # If user explicitly logged out, don't auto-restore
+        if cls._logged_out:
+            raise Exception("User is logged out. Please authenticate again.")
 
         print("[ServiceManager] Service is None or not authenticated, attempting to restore...")
 
@@ -87,6 +93,7 @@ class ServiceManager:
             cls._token_path = token_path
             cls._delegated_email = active_cred.delegated_email
             cls._credential_type = active_cred.credential_type
+            cls._logged_out = False  # Clear logout flag after successful restore
 
             db.close()
             return cls._instance
@@ -112,3 +119,4 @@ class ServiceManager:
         cls._token_path = None
         cls._delegated_email = None
         cls._credential_type = None
+        cls._logged_out = True  # Set flag to prevent auto-restore

@@ -44,6 +44,33 @@
 
 .status-icon {
   font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.status-pending .status-icon {
+  color: #6c757d;
+}
+
+.status-running .status-icon {
+  color: #0d6efd;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.status-completed .status-icon {
+  color: #198754;
+}
+
+.status-failed .status-icon {
+  color: #dc3545;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .status-text {
@@ -245,6 +272,47 @@
 .count-value {
   font-weight: 700;
   font-size: 1rem;
+}
+
+/* Job Actions */
+.job-actions {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-restart {
+  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+}
+
+.btn-restart:hover:not(:disabled) {
+  background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+}
+
+.btn-restart:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+}
+
+.btn-restart:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .count-item.success .count-value {

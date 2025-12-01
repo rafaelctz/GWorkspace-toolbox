@@ -420,10 +420,12 @@ class BatchProcessor:
 
         return {
             'job_uuid': job.job_uuid,
+            'job_type': job.job_type,
             'status': job.status,
-            'ou_paths': json.loads(job.ou_paths),
+            'ou_paths': json.loads(job.ou_paths) if job.ou_paths else None,
             'attribute': job.attribute,
             'value': job.value,
+            'file_path': job.file_path,
             'total_users': job.total_users,
             'processed_users': job.processed_users,
             'successful_users': job.successful_users,

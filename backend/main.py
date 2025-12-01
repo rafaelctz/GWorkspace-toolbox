@@ -7,6 +7,8 @@ from sqlalchemy.orm import Session
 import os
 from dotenv import load_dotenv
 import json
+import uuid
+from datetime import datetime
 
 from services.google_workspace import GoogleWorkspaceService
 from services.credential_service import CredentialService
@@ -538,6 +540,55 @@ async def inject_attribute(request: dict):
 
 # Batch Processing Endpoints (Async)
 
+@app.post("/api/batch/extract-aliases")
+async def batch_extract_aliases(background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    """
+    Create a batch job to extract aliases asynchronously
+    Returns immediately with job UUID for status tracking
+    """
+    try:
+        google_service = ServiceManager.get_service()
+
+        if not google_service.is_authenticated():
+            raise HTTPException(status_code=401, detail="Not authenticated")
+
+        # Generate unique job ID
+        job_uuid = str(uuid.uuid4())
+
+        # Generate file path
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        file_path = f'./exports/google_workspace_aliases_{timestamp}.csv'
+
+        # Create job record
+        from database.models import BatchJob
+        job = BatchJob(
+            job_uuid=job_uuid,
+            job_type='alias_extraction',
+            status='pending',
+            file_path=file_path,
+            total_users=0,
+            processed_users=0,
+            successful_users=0,
+            failed_users=0,
+            progress_percentage=0.0
+        )
+        db.add(job)
+        db.commit()
+        db.refresh(job)
+
+        # Start background processing
+        background_tasks.add_task(_process_alias_extraction_job, job_uuid)
+
+        return {
+            "success": True,
+            "message": "Alias extraction job created and processing started",
+            "job_uuid": job.job_uuid
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/api/batch/inject-attribute")
 async def batch_inject_attribute(request: dict, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     """
@@ -636,6 +687,64 @@ async def get_failed_users(job_uuid: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.post("/api/batch/jobs/{job_uuid}/restart")
+async def restart_batch_job(job_uuid: str, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    """
+    Restart a pending or failed batch job
+    Returns immediately and processes the job in the background
+    """
+    try:
+        google_service = ServiceManager.get_service()
+
+        if not google_service.is_authenticated():
+            raise HTTPException(status_code=401, detail="Not authenticated")
+
+        # Get the job
+        from database.models import BatchJob, CachedUser
+        job = db.query(BatchJob).filter(BatchJob.job_uuid == job_uuid).first()
+
+        if not job:
+            raise HTTPException(status_code=404, detail=f"Job {job_uuid} not found")
+
+        # Only restart pending or failed jobs
+        if job.status not in ['pending', 'failed']:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot restart job with status '{job.status}'. Only 'pending' or 'failed' jobs can be restarted."
+            )
+
+        # Reset any users in 'processing' state back to 'pending'
+        processing_users = db.query(CachedUser).filter(
+            CachedUser.job_uuid == job_uuid,
+            CachedUser.status == 'processing'
+        ).all()
+
+        for user in processing_users:
+            user.status = 'pending'
+
+        # Reset job to pending state if it was failed
+        if job.status == 'failed':
+            job.status = 'pending'
+            job.error_message = None
+            job.completed_at = None
+
+        db.commit()
+
+        # Add the job to background tasks
+        background_tasks.add_task(_process_batch_job, job_uuid)
+
+        return {
+            "message": "Job restart initiated",
+            "job_uuid": job_uuid,
+            "status": "pending"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 def _process_batch_job(job_uuid: str):
     """Background task to process a batch job"""
     from database.session import SessionLocal
@@ -662,6 +771,85 @@ def _process_batch_job(job_uuid: str):
         traceback.print_exc()
     finally:
         print(f"[_process_batch_job] Closing database session for job {job_uuid}")
+        db.close()
+
+
+def _process_alias_extraction_job(job_uuid: str):
+    """Background task to process an alias extraction job"""
+    from database.session import SessionLocal
+    from database.models import BatchJob
+    import traceback
+
+    print(f"[_process_alias_extraction_job] Starting alias extraction for job {job_uuid}")
+    db = SessionLocal()
+
+    try:
+        # Get the job
+        job = db.query(BatchJob).filter(BatchJob.job_uuid == job_uuid).first()
+        if not job:
+            print(f"[_process_alias_extraction_job] ERROR: Job {job_uuid} not found")
+            return
+
+        # Update job status to running
+        job.status = 'running'
+        job.started_at = datetime.now()
+        db.commit()
+
+        # Get Google service
+        print(f"[_process_alias_extraction_job] Getting service from ServiceManager...")
+        google_service = ServiceManager.get_service()
+
+        if not google_service or not google_service.is_authenticated():
+            print(f"[_process_alias_extraction_job] ERROR: Service not authenticated!")
+            job.status = 'failed'
+            job.error_message = "Google service not available or not authenticated"
+            job.completed_at = datetime.now()
+            db.commit()
+            return
+
+        # Progress callback
+        def progress_callback(total, processed, users_with_aliases):
+            print(f"[_process_alias_extraction_job] Progress: {processed}/{total} users processed, {users_with_aliases} with aliases")
+            job.total_users = total
+            job.processed_users = processed
+            job.successful_users = users_with_aliases
+            job.progress_percentage = (processed / total * 100) if total > 0 else 0
+            db.commit()
+
+        # Run the extraction
+        print(f"[_process_alias_extraction_job] Starting streaming extraction to {job.file_path}")
+        result = google_service.extract_aliases_streaming(
+            file_path=job.file_path,
+            progress_callback=progress_callback
+        )
+
+        # Update job with final results
+        job.status = 'completed'
+        job.total_users = result['total_users']
+        job.processed_users = result['total_users']
+        job.successful_users = result['users_with_aliases']
+        job.progress_percentage = 100.0
+        job.completed_at = datetime.now()
+        db.commit()
+
+        print(f"[_process_alias_extraction_job] Completed successfully: {result['users_with_aliases']} users with aliases")
+
+    except Exception as e:
+        print(f"[_process_alias_extraction_job] ❌ EXCEPTION: {str(e)}")
+        traceback.print_exc()
+
+        # Mark job as failed
+        try:
+            job = db.query(BatchJob).filter(BatchJob.job_uuid == job_uuid).first()
+            if job:
+                job.status = 'failed'
+                job.error_message = str(e)
+                job.completed_at = datetime.now()
+                db.commit()
+        except:
+            pass
+    finally:
+        print(f"[_process_alias_extraction_job] Closing database session for job {job_uuid}")
         db.close()
 
 

@@ -52,7 +52,8 @@
       "error": "Error al extraer alias",
       "totalUsers": "Total de Usuarios",
       "usersWithAliases": "Usuarios con Alias",
-      "download": "Descargar CSV"
+      "download": "Descargar CSV",
+      "authRequired": "Por favor autentícate primero para usar esta herramienta"
     },
     "attributeInjector": {
       "title": "Inyector de Atributos",
@@ -78,6 +79,42 @@
         "costCenter": "Centro de Costos",
         "buildingId": "ID de Edificio",
         "manager": "Correo del Gerente"
+      },
+      "useBatchMode": "Usar Modo por Lotes (Recomendado)",
+      "batchModeDescription": "Procesar en segundo plano con seguimiento de progreso. La interfaz puede cerrarse mientras se ejecuta el trabajo.",
+      "syncModeDescription": "Procesar inmediatamente y esperar la finalización. La interfaz debe permanecer abierta.",
+      "createBatchJob": "Crear Trabajo por Lotes",
+      "batchJobCreated": "¡Trabajo por lotes creado exitosamente!",
+      "usersQueued": "usuarios en cola para procesamiento"
+    },
+    "jobQueue": {
+      "title": "Trabajos por Lotes",
+      "loading": "Cargando trabajos...",
+      "noJobs": "No hay trabajos por lotes aún. ¡Crea tu primer trabajo arriba!",
+      "activeJobs": "Activo",
+      "organizationalUnits": "UOs",
+      "totalUsers": "Total",
+      "progress": "Progreso",
+      "successful": "Éxito",
+      "failed": "Fallido",
+      "usersProcessed": "usuarios procesados",
+      "jobId": "ID del Trabajo",
+      "created": "Creado",
+      "started": "Iniciado",
+      "completed": "Completado",
+      "error": "Error",
+      "userBreakdown": "Desglose de Estado de Usuario",
+      "status": {
+        "pending": "Pendiente",
+        "running": "En Ejecución",
+        "completed": "Completado",
+        "failed": "Fallido"
+      },
+      "userStatus": {
+        "pending": "Pendiente",
+        "processing": "Procesando",
+        "success": "Éxito",
+        "failed": "Fallido"
       }
     }
   },

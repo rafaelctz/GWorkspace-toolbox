@@ -287,6 +287,120 @@ class GoogleWorkspaceService:
             'max_aliases': max_aliases
         }
 
+    def extract_aliases_streaming(self, file_path: str, progress_callback=None) -> Dict:
+        """
+        Extract aliases with streaming CSV writing and progress tracking.
+        Suitable for large environments (millions of users).
+
+        Args:
+            file_path: Path where CSV should be written
+            progress_callback: Optional callback function(total, processed, users_with_aliases)
+
+        Returns:
+            Dict with extraction stats
+        """
+        if not self.is_authenticated():
+            raise Exception("Not authenticated")
+
+        import time
+
+        total_users = 0
+        users_with_aliases_count = 0
+        page_token = None
+        max_results = int(os.getenv("MAX_RESULTS_PER_PAGE", 500))
+        max_alias_columns = 0
+
+        # Track all users with aliases for dynamic column sizing
+        # We'll do two passes: first to determine max aliases, second to write
+        # For very large datasets, we could skip this and use a fixed number
+        temp_users = []
+
+        try:
+            # First pass: collect users and determine max alias count
+            print(f"Starting alias extraction (streaming mode)...")
+
+            while True:
+                try:
+                    results = self.service.users().list(
+                        customer='my_customer',
+                        maxResults=max_results,
+                        orderBy='email',
+                        pageToken=page_token
+                    ).execute()
+
+                    page_users = results.get('users', [])
+
+                    for user in page_users:
+                        total_users += 1
+                        aliases = user.get('aliases', [])
+
+                        if aliases:
+                            users_with_aliases_count += 1
+                            temp_users.append({
+                                'email': user.get('primaryEmail', ''),
+                                'aliases': aliases
+                            })
+                            max_alias_columns = max(max_alias_columns, len(aliases))
+
+                        # Progress callback every 100 users
+                        if progress_callback and total_users % 100 == 0:
+                            progress_callback(total_users, total_users, users_with_aliases_count)
+
+                    page_token = results.get('nextPageToken')
+                    if not page_token:
+                        break
+
+                    # Rate limiting: 33ms delay between API calls (~30 calls/sec)
+                    time.sleep(0.033)
+
+                except HttpError as error:
+                    raise Exception(f"Failed to retrieve users: {error}")
+
+            # Final progress update after collection
+            if progress_callback:
+                progress_callback(total_users, total_users, users_with_aliases_count)
+
+            print(f"Collected {total_users} users, {users_with_aliases_count} with aliases")
+
+            # Second pass: write to CSV
+            print(f"Writing to CSV: {file_path}")
+
+            # Ensure directory exists
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+            with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
+                # Create headers
+                headers = ['Current Email'] + [f'Alias {i+1}' for i in range(max_alias_columns)]
+
+                writer = csv.writer(csvfile)
+                writer.writerow(headers)
+
+                # Write each user
+                for user_data in temp_users:
+                    row = [user_data['email']]
+                    aliases = user_data['aliases']
+
+                    # Add aliases
+                    for i in range(max_alias_columns):
+                        if i < len(aliases):
+                            row.append(aliases[i])
+                        else:
+                            row.append('')
+
+                    writer.writerow(row)
+
+            print(f"CSV written successfully: {users_with_aliases_count} users with aliases")
+
+            return {
+                'file_path': file_path,
+                'total_users': total_users,
+                'users_with_aliases': users_with_aliases_count,
+                'max_aliases': max_alias_columns
+            }
+
+        except Exception as error:
+            raise Exception(f"Failed to extract aliases: {error}")
+
     def get_organizational_units(self) -> List[Dict]:
         """Get all organizational units from Google Workspace"""
         if not self.is_authenticated():

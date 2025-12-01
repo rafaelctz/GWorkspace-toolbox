@@ -8,13 +8,13 @@ function Sidebar({ currentTool, onToolChange, authStatus }) {
     {
       id: 'alias-extractor',
       name: t('tools.aliasExtractor.title'),
-      icon: '📧',
+      icon: '◉',
       description: t('tools.aliasExtractor.description')
     },
     {
       id: 'attribute-injector',
       name: t('tools.attributeInjector.title'),
-      icon: '✏️',
+      icon: '◉',
       description: t('tools.attributeInjector.description')
     }
   ]
@@ -27,7 +27,7 @@ function Sidebar({ currentTool, onToolChange, authStatus }) {
 
       {!authStatus.authenticated && (
         <div className="sidebar-warning">
-          <span>⚠️</span>
+          <span className="warning-icon">!</span>
           <p>{t('tools.authRequired')}</p>
         </div>
       )}

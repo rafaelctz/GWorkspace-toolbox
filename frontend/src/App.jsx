@@ -102,7 +102,7 @@ function App() {
                 <span className="status-indicator active"></span>
                 <span className="auth-email">{authStatus.adminEmail}</span>
                 <button onClick={handleLogout} className="btn-logout" title={t('auth.logout')}>
-                  🚪
+                  Logout
                 </button>
               </div>
             )}

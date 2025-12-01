@@ -22,16 +22,17 @@ class Credential(Base):
 
 
 class BatchJob(Base):
-    """Tracks attribute injection jobs"""
+    """Tracks batch jobs (attribute injection, alias extraction, etc.)"""
     __tablename__ = 'batch_jobs'
 
     id = Column(Integer, primary_key=True)
     job_uuid = Column(String(36), unique=True, nullable=False, index=True)
-    job_type = Column(String(50), nullable=False)  # 'attribute_injection'
+    job_type = Column(String(50), nullable=False)  # 'attribute_injection', 'alias_extraction'
     status = Column(String(20), nullable=False, index=True)  # 'pending', 'running', 'completed', 'failed'
-    ou_paths = Column(Text, nullable=False)  # JSON array of OU paths
-    attribute = Column(String(100), nullable=False)
-    value = Column(Text, nullable=False)
+    ou_paths = Column(Text, nullable=True)  # JSON array of OU paths (for attribute injection)
+    attribute = Column(String(100), nullable=True)  # For attribute injection
+    value = Column(Text, nullable=True)  # For attribute injection
+    file_path = Column(Text, nullable=True)  # For alias extraction
     total_users = Column(Integer, default=0)
     processed_users = Column(Integer, default=0)
     successful_users = Column(Integer, default=0)

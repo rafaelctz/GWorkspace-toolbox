@@ -4,7 +4,7 @@ import axios from 'axios'
 import JobCard from './JobCard'
 import './JobQueue.css'
 
-function JobQueue({ apiBaseUrl }) {
+function JobQueue({ apiBaseUrl, jobType }) {
   const { t } = useTranslation()
   const [jobs, setJobs] = useState([])
   const [loading, setLoading] = useState(false)
@@ -15,12 +15,17 @@ function JobQueue({ apiBaseUrl }) {
     // Poll for updates every 2 seconds for more responsive UI
     const interval = setInterval(fetchJobs, 2000)
     return () => clearInterval(interval)
-  }, [apiBaseUrl])
+  }, [apiBaseUrl, jobType])
 
   const fetchJobs = async () => {
     try {
       const response = await axios.get(`${apiBaseUrl}/api/batch/jobs`)
-      setJobs(response.data.jobs || [])
+      const allJobs = response.data.jobs || []
+      // Filter by job type if provided
+      const filteredJobs = jobType
+        ? allJobs.filter(job => job.job_type === jobType)
+        : allJobs
+      setJobs(filteredJobs)
       setError('')
     } catch (err) {
       if (err.response?.status !== 401) {

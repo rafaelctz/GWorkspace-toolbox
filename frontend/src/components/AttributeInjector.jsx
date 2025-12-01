@@ -186,8 +186,7 @@ function AttributeInjector({ apiBaseUrl }) {
             onChange={() => toggleOU(node.path)}
           />
           <span className="ou-name">
-            {hasChildren && <span className="ou-icon">📁</span>}
-            {!hasChildren && <span className="ou-icon">📄</span>}
+            {hasChildren && <span className="ou-icon">▸</span>}
             {node.name}
           </span>
           <span className="ou-path">{node.path}</span>

@@ -42,6 +42,7 @@
   },
   "tools": {
     "title": "Ferramentas Disponíveis",
+    "authRequired": "Por favor, autentique-se primeiro para usar as ferramentas",
     "aliasExtractor": {
       "title": "Extrator de Alias",
       "description": "Extrair todas as contas de usuário com aliases de email do Google Workspace",
@@ -53,6 +54,68 @@
       "usersWithAliases": "Usuários com Aliases",
       "download": "Baixar CSV",
       "authRequired": "Por favor, autentique-se primeiro para usar esta ferramenta"
+    },
+    "attributeInjector": {
+      "title": "Injetor de Atributos",
+      "description": "Injetar um atributo personalizado a usuários em uma ou múltiplas Unidades Organizacionais",
+      "selectOUs": "Selecionar Unidades Organizacionais",
+      "selectedOUs": "UOs Selecionadas",
+      "noOUs": "Nenhuma unidade organizacional encontrada",
+      "selectAttribute": "Selecionar Atributo",
+      "chooseAttribute": "Escolher um atributo",
+      "enterValue": "Inserir Valor",
+      "valuePlaceholder": "Insira o valor a ser injetado",
+      "injectButton": "Injetar Atributo",
+      "injecting": "Injetando...",
+      "success": "Atributo injetado com sucesso!",
+      "error": "Falha ao injetar atributo",
+      "errorFetchingOUs": "Falha ao buscar unidades organizacionais",
+      "selectAtLeastOneOU": "Por favor, selecione pelo menos uma unidade organizacional",
+      "usersUpdated": "usuários atualizados",
+      "attributes": {
+        "title": "Cargo",
+        "department": "Departamento",
+        "employeeType": "Tipo de Funcionário",
+        "costCenter": "Centro de Custo",
+        "buildingId": "ID do Edifício",
+        "manager": "Email do Gestor"
+      },
+      "useBatchMode": "Usar Modo em Lote (Recomendado)",
+      "batchModeDescription": "Processar em segundo plano com rastreamento de progresso. A interface pode ser fechada enquanto o trabalho é executado.",
+      "syncModeDescription": "Processar imediatamente e aguardar conclusão. A interface deve permanecer aberta.",
+      "createBatchJob": "Criar Trabalho em Lote",
+      "batchJobCreated": "Trabalho em lote criado com sucesso!",
+      "usersQueued": "usuários na fila para processamento"
+    },
+    "jobQueue": {
+      "title": "Trabalhos em Lote",
+      "loading": "Carregando trabalhos...",
+      "noJobs": "Nenhum trabalho em lote ainda. Crie seu primeiro trabalho acima!",
+      "activeJobs": "Ativo",
+      "organizationalUnits": "UOs",
+      "totalUsers": "Total",
+      "progress": "Progresso",
+      "successful": "Sucesso",
+      "failed": "Falhou",
+      "usersProcessed": "usuários processados",
+      "jobId": "ID do Trabalho",
+      "created": "Criado",
+      "started": "Iniciado",
+      "completed": "Concluído",
+      "error": "Erro",
+      "userBreakdown": "Detalhamento de Status do Usuário",
+      "status": {
+        "pending": "Pendente",
+        "running": "Em Execução",
+        "completed": "Concluído",
+        "failed": "Falhou"
+      },
+      "userStatus": {
+        "pending": "Pendente",
+        "processing": "Processando",
+        "success": "Sucesso",
+        "failed": "Falhou"
+      }
     }
   },
   "common": {

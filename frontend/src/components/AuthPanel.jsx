@@ -241,17 +241,17 @@ function AuthPanel({ authStatus, onAuthChange, apiBaseUrl }) {
               <div className={`credentials-status ${credentialsExist ? 'exists' : 'not-exists'}`}>
                 {credentialsExist ? (
                   <>
-                    <span>✅ {t('auth.credentialsUploaded')}</span>
+                    <span>{t('auth.credentialsUploaded')}</span>
                     <button
                       onClick={handleClearCredentials}
                       className="btn-link"
                       style={{ marginLeft: '1rem', color: 'var(--error-color)', cursor: 'pointer' }}
                     >
-                      🗑️ {t('auth.clearCredentials')}
+                      {t('auth.clearCredentials')}
                     </button>
                   </>
                 ) : (
-                  <span>ℹ️ {t('auth.noCredentials')}</span>
+                  <span>{t('auth.noCredentials')}</span>
                 )}
               </div>
             )}
@@ -264,7 +264,7 @@ function AuthPanel({ authStatus, onAuthChange, apiBaseUrl }) {
                 onChange={handleFileSelect}
               />
               <label htmlFor="credentials-file" className="file-input-label">
-                📁 {t('auth.chooseFile')}
+                {t('auth.chooseFile')}
               </label>
               {selectedFile && (
                 <span className="file-name">{selectedFile.name}</span>
@@ -283,19 +283,12 @@ function AuthPanel({ authStatus, onAuthChange, apiBaseUrl }) {
             )}
           </div>
 
-          {credentialType && credentialsExist && (
+          {credentialType && credentialsExist && credentialType === 'service_account' && serviceAccountEmail && (
             <div className="form-group">
-              <label className="form-label">{t('auth.credentialType')}</label>
-              <div className="credentials-status exists">
-                <span>
-                  {credentialType === 'oauth' ? '🔐 ' + t('auth.oauthType') : '🔑 ' + t('auth.serviceAccountType')}
-                </span>
+              <label className="form-label">{t('auth.serviceAccountInfo')}</label>
+              <div className="info-value" style={{ padding: '0.75rem', background: 'var(--background)', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
+                {serviceAccountEmail}
               </div>
-              {credentialType === 'service_account' && serviceAccountEmail && (
-                <p style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                  {t('auth.serviceAccountInfo')}: {serviceAccountEmail}
-                </p>
-              )}
             </div>
           )}
 

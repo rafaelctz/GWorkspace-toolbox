@@ -1,0 +1,92 @@
+{
+  "app": {
+    "title": "DEA Toolbox",
+    "subtitle": "Tools for AD Administrators - SAML & SSO Integration Solutions"
+  },
+  "language": {
+    "label": "Language",
+    "english": "English",
+    "spanish": "Spanish",
+    "portuguese": "Portuguese"
+  },
+  "auth": {
+    "title": "Google Workspace Authentication",
+    "notAuthenticated": "Not authenticated",
+    "authenticated": "Authenticated",
+    "adminEmail": "Admin Email",
+    "domain": "Domain",
+    "uploadCredentials": "Upload Credentials",
+    "uploadCredentialsDesc": "Upload your Google OAuth credentials JSON file",
+    "chooseFile": "Choose File",
+    "authenticate": "Authenticate",
+    "logout": "Logout",
+    "authenticating": "Authenticating...",
+    "uploadingCredentials": "Uploading credentials...",
+    "authSuccess": "Authentication successful!",
+    "uploadSuccess": "Credentials uploaded successfully!",
+    "authError": "Authentication failed",
+    "uploadError": "Failed to upload credentials",
+    "clearCredentials": "Clear Credentials",
+    "credentialsUploaded": "Credentials uploaded",
+    "noCredentials": "No credentials uploaded",
+    "clearSuccess": "Credentials cleared successfully!",
+    "clearError": "Failed to clear credentials",
+    "credentialType": "Credential Type",
+    "oauthType": "OAuth 2.0 (Interactive Login)",
+    "serviceAccountType": "Service Account (Delegated Access)",
+    "delegatedEmail": "Delegated Admin Email",
+    "delegatedEmailDesc": "Enter the email of the admin account to impersonate",
+    "delegatedEmailPlaceholder": "admin@yourdomain.com",
+    "serviceAccountAuth": "Authenticate with Service Account",
+    "serviceAccountInfo": "Using service account with domain-wide delegation"
+  },
+  "tools": {
+    "title": "Available Tools",
+    "authRequired": "Please authenticate first to use tools",
+    "aliasExtractor": {
+      "title": "Alias Extractor",
+      "description": "Extract all user accounts with email aliases from Google Workspace",
+      "button": "Extract Aliases",
+      "extracting": "Extracting aliases...",
+      "success": "Aliases extracted successfully!",
+      "error": "Failed to extract aliases",
+      "totalUsers": "Total Users",
+      "usersWithAliases": "Users with Aliases",
+      "download": "Download CSV"
+    },
+    "attributeInjector": {
+      "title": "Attribute Injector",
+      "description": "Inject a custom attribute to users in one or multiple Organizational Units",
+      "selectOUs": "Select Organizational Units",
+      "selectedOUs": "Selected OUs",
+      "noOUs": "No organizational units found",
+      "selectAttribute": "Select Attribute",
+      "chooseAttribute": "Choose an attribute",
+      "enterValue": "Enter Value",
+      "valuePlaceholder": "Enter the value to inject",
+      "injectButton": "Inject Attribute",
+      "injecting": "Injecting...",
+      "success": "Attribute injected successfully!",
+      "error": "Failed to inject attribute",
+      "errorFetchingOUs": "Failed to fetch organizational units",
+      "selectAtLeastOneOU": "Please select at least one organizational unit",
+      "usersUpdated": "users updated",
+      "attributes": {
+        "title": "Job Title",
+        "department": "Department",
+        "employeeType": "Employee Type",
+        "costCenter": "Cost Center",
+        "buildingId": "Building ID",
+        "manager": "Manager Email"
+      }
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "download": "Download",
+    "cancel": "Cancel",
+    "close": "Close"
+  }
+}

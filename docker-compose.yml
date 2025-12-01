@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: dea-toolbox-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/credentials.json:/app/credentials.json
+      - ./backend/token.json:/app/token.json
+      - ./backend/exports:/app/exports
+    environment:
+      - PORT=8000
+      - HOST=0.0.0.0
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:80
+    restart: unless-stopped
+    networks:
+      - dea-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: dea-toolbox-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - dea-network
+
+networks:
+  dea-network:
+    driver: bridge
+
+volumes:
+  exports:

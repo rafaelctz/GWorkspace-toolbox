@@ -1,0 +1,92 @@
+{
+  "app": {
+    "title": "DEA Toolbox",
+    "subtitle": "Herramientas para Administradores de AD - Soluciones de Integración SAML y SSO"
+  },
+  "language": {
+    "label": "Idioma",
+    "english": "Inglés",
+    "spanish": "Español",
+    "portuguese": "Portugués"
+  },
+  "auth": {
+    "title": "Autenticación de Google Workspace",
+    "notAuthenticated": "No autenticado",
+    "authenticated": "Autenticado",
+    "adminEmail": "Correo del Administrador",
+    "domain": "Dominio",
+    "uploadCredentials": "Subir Credenciales",
+    "uploadCredentialsDesc": "Sube tu archivo JSON de credenciales OAuth de Google",
+    "chooseFile": "Elegir Archivo",
+    "authenticate": "Autenticar",
+    "logout": "Cerrar Sesión",
+    "authenticating": "Autenticando...",
+    "uploadingCredentials": "Subiendo credenciales...",
+    "authSuccess": "¡Autenticación exitosa!",
+    "uploadSuccess": "¡Credenciales subidas exitosamente!",
+    "authError": "Error en la autenticación",
+    "uploadError": "Error al subir credenciales",
+    "clearCredentials": "Limpiar Credenciales",
+    "credentialsUploaded": "Credenciales subidas",
+    "noCredentials": "Sin credenciales",
+    "clearSuccess": "¡Credenciales eliminadas exitosamente!",
+    "clearError": "Error al eliminar credenciales",
+    "credentialType": "Tipo de Credencial",
+    "oauthType": "OAuth 2.0 (Inicio Interactivo)",
+    "serviceAccountType": "Cuenta de Servicio (Acceso Delegado)",
+    "delegatedEmail": "Correo del Administrador Delegado",
+    "delegatedEmailDesc": "Ingrese el correo de la cuenta de administrador a suplantar",
+    "delegatedEmailPlaceholder": "admin@tudominio.com",
+    "serviceAccountAuth": "Autenticar con Cuenta de Servicio",
+    "serviceAccountInfo": "Usando cuenta de servicio con delegación de dominio"
+  },
+  "tools": {
+    "title": "Herramientas Disponibles",
+    "authRequired": "Por favor autentícate primero para usar las herramientas",
+    "aliasExtractor": {
+      "title": "Extractor de Alias",
+      "description": "Extraer todas las cuentas de usuario con alias de correo de Google Workspace",
+      "button": "Extraer Alias",
+      "extracting": "Extrayendo alias...",
+      "success": "¡Alias extraídos exitosamente!",
+      "error": "Error al extraer alias",
+      "totalUsers": "Total de Usuarios",
+      "usersWithAliases": "Usuarios con Alias",
+      "download": "Descargar CSV"
+    },
+    "attributeInjector": {
+      "title": "Inyector de Atributos",
+      "description": "Inyectar un atributo personalizado a usuarios en una o múltiples Unidades Organizativas",
+      "selectOUs": "Seleccionar Unidades Organizativas",
+      "selectedOUs": "UOs Seleccionadas",
+      "noOUs": "No se encontraron unidades organizativas",
+      "selectAttribute": "Seleccionar Atributo",
+      "chooseAttribute": "Elegir un atributo",
+      "enterValue": "Ingresar Valor",
+      "valuePlaceholder": "Ingrese el valor a inyectar",
+      "injectButton": "Inyectar Atributo",
+      "injecting": "Inyectando...",
+      "success": "¡Atributo inyectado exitosamente!",
+      "error": "Error al inyectar atributo",
+      "errorFetchingOUs": "Error al obtener unidades organizativas",
+      "selectAtLeastOneOU": "Por favor selecciona al menos una unidad organizativa",
+      "usersUpdated": "usuarios actualizados",
+      "attributes": {
+        "title": "Título de Trabajo",
+        "department": "Departamento",
+        "employeeType": "Tipo de Empleado",
+        "costCenter": "Centro de Costos",
+        "buildingId": "ID de Edificio",
+        "manager": "Correo del Gerente"
+      }
+    }
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "download": "Descargar",
+    "cancel": "Cancelar",
+    "close": "Cerrar"
+  }
+}

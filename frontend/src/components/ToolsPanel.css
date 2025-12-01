@@ -1,0 +1,7 @@
+.tools-panel {
+  margin-top: 2rem;
+}
+
+.tool-card + .tool-card {
+  margin-top: 1rem;
+}

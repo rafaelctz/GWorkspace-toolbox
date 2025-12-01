@@ -1,0 +1,66 @@
+{
+  "app": {
+    "title": "DEA Toolbox",
+    "subtitle": "Ferramentas para Administradores de AD - Soluções de Integração SAML e SSO"
+  },
+  "language": {
+    "label": "Idioma",
+    "english": "Inglês",
+    "spanish": "Espanhol",
+    "portuguese": "Português"
+  },
+  "auth": {
+    "title": "Autenticação do Google Workspace",
+    "notAuthenticated": "Não autenticado",
+    "authenticated": "Autenticado",
+    "adminEmail": "Email do Administrador",
+    "domain": "Domínio",
+    "uploadCredentials": "Enviar Credenciais",
+    "uploadCredentialsDesc": "Envie seu arquivo JSON de credenciais OAuth do Google",
+    "chooseFile": "Escolher Arquivo",
+    "authenticate": "Autenticar",
+    "logout": "Sair",
+    "authenticating": "Autenticando...",
+    "uploadingCredentials": "Enviando credenciais...",
+    "authSuccess": "Autenticação bem-sucedida!",
+    "uploadSuccess": "Credenciais enviadas com sucesso!",
+    "authError": "Falha na autenticação",
+    "uploadError": "Falha ao enviar credenciais",
+    "clearCredentials": "Limpar Credenciais",
+    "credentialsUploaded": "Credenciais enviadas",
+    "noCredentials": "Sem credenciais",
+    "clearSuccess": "Credenciais removidas com sucesso!",
+    "clearError": "Falha ao remover credenciais",
+    "credentialType": "Tipo de Credencial",
+    "oauthType": "OAuth 2.0 (Login Interativo)",
+    "serviceAccountType": "Conta de Serviço (Acesso Delegado)",
+    "delegatedEmail": "Email do Administrador Delegado",
+    "delegatedEmailDesc": "Digite o email da conta de administrador a representar",
+    "delegatedEmailPlaceholder": "admin@seudominio.com",
+    "serviceAccountAuth": "Autenticar com Conta de Serviço",
+    "serviceAccountInfo": "Usando conta de serviço com delegação de domínio"
+  },
+  "tools": {
+    "title": "Ferramentas Disponíveis",
+    "aliasExtractor": {
+      "title": "Extrator de Alias",
+      "description": "Extrair todas as contas de usuário com aliases de email do Google Workspace",
+      "button": "Extrair Aliases",
+      "extracting": "Extraindo aliases...",
+      "success": "Aliases extraídos com sucesso!",
+      "error": "Falha ao extrair aliases",
+      "totalUsers": "Total de Usuários",
+      "usersWithAliases": "Usuários com Aliases",
+      "download": "Baixar CSV",
+      "authRequired": "Por favor, autentique-se primeiro para usar esta ferramenta"
+    }
+  },
+  "common": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "download": "Baixar",
+    "cancel": "Cancelar",
+    "close": "Fechar"
+  }
+}

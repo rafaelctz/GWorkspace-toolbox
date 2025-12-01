@@ -1,21 +1,30 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import Optional, List
+from sqlalchemy.orm import Session
 import os
 from dotenv import load_dotenv
 import json
 
 from services.google_workspace import GoogleWorkspaceService
+from database.session import init_db, get_db
 
 load_dotenv()
 
 app = FastAPI(
     title="DEA Toolbox API",
     description="Tools for AD administrators to manage SAML and SSO integrations",
-    version="1.0.0"
+    version="2.0.0"  # Updated for database version
 )
+
+# Initialize database on startup
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database tables on application startup"""
+    init_db()
+    print("✓ Database initialized")
 
 # CORS Configuration
 origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173").split(",")
@@ -50,9 +59,26 @@ class AliasExtractionResponse(BaseModel):
 async def root():
     return {
         "message": "DEA Toolbox API",
-        "version": "1.0.0",
-        "status": "running"
+        "version": "2.0.0",
+        "status": "running",
+        "features": ["alias_extractor", "attribute_injector", "batch_processing", "database"]
     }
+
+
+@app.get("/api/health/database")
+async def database_health(db: Session = Depends(get_db)):
+    """Check database connection health"""
+    try:
+        from sqlalchemy import text
+        # Simple query to verify database connection
+        db.execute(text("SELECT 1"))
+        return {
+            "status": "healthy",
+            "database": "connected",
+            "type": "sqlite"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 
 @app.get("/api/status", response_model=StatusResponse)

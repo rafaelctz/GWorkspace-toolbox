@@ -47,7 +47,7 @@ async def startup_event():
             with open(credentials_path, 'w') as f:
                 json.dump(creds_data, f)
 
-            # Write token file if exists
+            # Write token file if exists (for OAuth)
             token_data = cred_service.get_token_data(active_cred)
             if token_data:
                 with open(token_path, 'w') as f:
@@ -60,9 +60,19 @@ async def startup_event():
                 active_cred.delegated_email
             )
 
+            # For service accounts, explicitly authenticate with delegated email
+            if active_cred.credential_type == 'service_account' and active_cred.delegated_email:
+                try:
+                    google_service.authenticate_service_account(active_cred.delegated_email)
+                    print(f"✓ Service account auto-authenticated as {active_cred.delegated_email}")
+                except Exception as e:
+                    print(f"⚠️  Service account authentication failed: {str(e)}")
+                    google_service = None
+
             print(f"✓ Credentials restored from database ({active_cred.credential_type})")
-            if google_service.is_authenticated():
-                print(f"✓ Auto-authenticated as {active_cred.delegated_email or 'OAuth user'}")
+            if google_service and google_service.is_authenticated():
+                user_email = active_cred.delegated_email if active_cred.credential_type == 'service_account' else 'OAuth user'
+                print(f"✓ Auto-authenticated as {user_email}")
 
         db.close()
     except Exception as e:

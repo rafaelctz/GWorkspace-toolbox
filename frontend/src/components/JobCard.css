@@ -255,6 +255,100 @@
   color: #842029;
 }
 
+/* Failed Users Section */
+.failed-users-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #dee2e6;
+}
+
+.btn-view-failed {
+  padding: 0.5rem 1rem;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-view-failed:hover:not(:disabled) {
+  background-color: #c82333;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-view-failed:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.failed-users-list {
+  margin-top: 1rem;
+  overflow-x: auto;
+}
+
+.failed-users-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.failed-users-table thead {
+  background: #dc3545;
+  color: white;
+}
+
+.failed-users-table th {
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.failed-users-table tbody tr {
+  border-bottom: 1px solid #dee2e6;
+}
+
+.failed-users-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.failed-users-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.failed-users-table td {
+  padding: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.user-email {
+  font-family: 'Courier New', monospace;
+  color: #0d6efd;
+  font-weight: 500;
+}
+
+.user-ou {
+  color: #6c757d;
+  font-size: 0.8125rem;
+}
+
+.user-error {
+  color: #dc3545;
+  font-size: 0.8125rem;
+  max-width: 400px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 @media (max-width: 768px) {
   .job-card-header {
     flex-direction: column;
@@ -273,5 +367,18 @@
 
   .counts-grid {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .failed-users-table {
+    font-size: 0.8125rem;
+  }
+
+  .failed-users-table th,
+  .failed-users-table td {
+    padding: 0.5rem;
+  }
+
+  .user-error {
+    max-width: 200px;
   }
 }

@@ -437,3 +437,27 @@ class BatchProcessor:
         ).limit(limit).all()
 
         return [self.get_job_status(job.job_uuid) for job in jobs]
+
+    def get_failed_users(self, job_uuid: str) -> List[Dict]:
+        """
+        Get all failed users for a job with their error messages
+
+        Args:
+            job_uuid: The job UUID
+
+        Returns:
+            List of dicts with user email and error message
+        """
+        failed_users = self.user_cache_service.get_cached_users(
+            job_uuid=job_uuid,
+            status='failed'
+        )
+
+        return [
+            {
+                'email': user.email,
+                'error_message': user.error_message,
+                'ou_path': user.ou_path
+            }
+            for user in failed_users
+        ]

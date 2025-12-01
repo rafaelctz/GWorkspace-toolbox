@@ -1,10 +1,14 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import axios from 'axios'
 import './JobCard.css'
 
 function JobCard({ job, apiBaseUrl }) {
   const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
+  const [failedUsers, setFailedUsers] = useState([])
+  const [loadingFailed, setLoadingFailed] = useState(false)
+  const [showFailedUsers, setShowFailedUsers] = useState(false)
 
   const getStatusClass = (status) => {
     switch (status) {
@@ -39,6 +43,27 @@ function JobCard({ job, apiBaseUrl }) {
       return `${paths.length} ${t('tools.jobQueue.organizationalUnits')}`
     } catch {
       return ouPaths
+    }
+  }
+
+  const fetchFailedUsers = async () => {
+    if (failedUsers.length > 0) {
+      // Already loaded
+      setShowFailedUsers(!showFailedUsers)
+      return
+    }
+
+    setLoadingFailed(true)
+    try {
+      const response = await axios.get(
+        `${apiBaseUrl}/api/batch/jobs/${job.job_uuid}/failed-users`
+      )
+      setFailedUsers(response.data.failed_users || [])
+      setShowFailedUsers(true)
+    } catch (error) {
+      console.error('Failed to load failed users:', error)
+    } finally {
+      setLoadingFailed(false)
     }
   }
 
@@ -159,6 +184,49 @@ function JobCard({ job, apiBaseUrl }) {
                   <span className="count-value">{job.user_status_counts.failed || 0}</span>
                 </div>
               </div>
+            </div>
+          )}
+
+          {job.failed_users > 0 && (
+            <div className="failed-users-section">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  fetchFailedUsers()
+                }}
+                className="btn-view-failed"
+                disabled={loadingFailed}
+              >
+                {loadingFailed
+                  ? t('common.loading')
+                  : showFailedUsers
+                    ? `Hide Failed Users (${job.failed_users})`
+                    : `View Failed Users (${job.failed_users})`
+                }
+              </button>
+
+              {showFailedUsers && failedUsers.length > 0 && (
+                <div className="failed-users-list">
+                  <table className="failed-users-table">
+                    <thead>
+                      <tr>
+                        <th>Email</th>
+                        <th>OU Path</th>
+                        <th>Error</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {failedUsers.map((user, index) => (
+                        <tr key={index}>
+                          <td className="user-email">{user.email}</td>
+                          <td className="user-ou">{user.ou_path}</td>
+                          <td className="user-error">{user.error_message}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
         </div>

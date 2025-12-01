@@ -602,6 +602,22 @@ async def list_batch_jobs(limit: int = 50, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/api/batch/jobs/{job_uuid}/failed-users")
+async def get_failed_users(job_uuid: str, db: Session = Depends(get_db)):
+    """Get all failed users for a specific job with their error messages"""
+    global google_service
+
+    if google_service is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    try:
+        processor = BatchProcessor(db, google_service)
+        failed_users = processor.get_failed_users(job_uuid)
+        return {"failed_users": failed_users, "count": len(failed_users)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 def _process_batch_job(job_uuid: str):
     """Background task to process a batch job"""
     from database.session import SessionLocal

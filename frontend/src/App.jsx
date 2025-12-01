@@ -43,6 +43,17 @@ function App() {
     }
   }
 
+  const handleLogout = async () => {
+    try {
+      await axios.post(`${API_BASE_URL}/api/auth/logout`)
+      await checkAuthStatus()
+    } catch (error) {
+      console.error('Logout failed:', error)
+      // Still refresh status even if logout fails
+      await checkAuthStatus()
+    }
+  }
+
   useEffect(() => {
     checkAuthStatus()
   }, [])
@@ -90,6 +101,9 @@ function App() {
               <div className="auth-status">
                 <span className="status-indicator active"></span>
                 <span className="auth-email">{authStatus.adminEmail}</span>
+                <button onClick={handleLogout} className="btn-logout" title={t('auth.logout')}>
+                  🚪
+                </button>
               </div>
             )}
             <LanguageSelector />

@@ -2,22 +2,25 @@
 import os
 import base64
 from cryptography.fernet import Fernet
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2
 
 # Get encryption key from environment or generate one
 ENCRYPTION_KEY = os.getenv('ENCRYPTION_KEY')
 
 if not ENCRYPTION_KEY:
-    # Generate a key from a default password (should be set in production!)
+    # Generate a default key (should be set in production!)
     print("⚠️  WARNING: Using default encryption key. Set ENCRYPTION_KEY in .env for production!")
-    ENCRYPTION_KEY = base64.urlsafe_b64encode(b'DEA_TOOLBOX_DEFAULT_KEY_CHANGE_ME_IN_PROD_!!!!!')[:32]
+    # Create a proper 32-byte key from a fixed seed
+    key_material = b'DEA_TOOLBOX_DEFAULT_KEY_CHANGE_ME_IN_PROD_!!!!!'[:32]
+    # Pad to 32 bytes if needed
+    key_material = key_material.ljust(32, b'0')
+    ENCRYPTION_KEY = base64.urlsafe_b64encode(key_material)
 else:
-    # Ensure key is proper length
-    ENCRYPTION_KEY = base64.urlsafe_b64encode(ENCRYPTION_KEY.encode())[:32]
+    # Convert string key to proper format
+    key_material = ENCRYPTION_KEY.encode()[:32].ljust(32, b'0')
+    ENCRYPTION_KEY = base64.urlsafe_b64encode(key_material)
 
 # Create Fernet cipher
-cipher = Fernet(base64.urlsafe_b64encode(ENCRYPTION_KEY + b'=' * (44 - len(ENCRYPTION_KEY))))
+cipher = Fernet(ENCRYPTION_KEY)
 
 
 def encrypt_data(data: str) -> str:

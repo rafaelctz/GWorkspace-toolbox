@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 import json
 
 from services.google_workspace import GoogleWorkspaceService
+from services.credential_service import CredentialService
 from database.session import init_db, get_db
 
 load_dotenv()
@@ -22,9 +23,49 @@ app = FastAPI(
 # Initialize database on startup
 @app.on_event("startup")
 async def startup_event():
-    """Initialize database tables on application startup"""
+    """Initialize database tables and restore credentials from database"""
+    global google_service
+
     init_db()
     print("✓ Database initialized")
+
+    # Try to restore credentials from database
+    try:
+        from database.session import SessionLocal
+        db = SessionLocal()
+        cred_service = CredentialService(db)
+
+        active_cred = cred_service.get_active_credential()
+        if active_cred:
+            # Restore credentials to files
+            credentials_path = os.getenv("GOOGLE_CREDENTIALS_PATH", "./credentials.json")
+            token_path = os.getenv("GOOGLE_TOKEN_PATH", "./token.json")
+
+            # Write credentials file
+            creds_data = cred_service.get_credentials_data(active_cred)
+            with open(credentials_path, 'w') as f:
+                json.dump(creds_data, f)
+
+            # Write token file if exists
+            token_data = cred_service.get_token_data(active_cred)
+            if token_data:
+                with open(token_path, 'w') as f:
+                    json.dump(token_data, f)
+
+            # Initialize service
+            google_service = GoogleWorkspaceService(
+                credentials_path,
+                token_path,
+                active_cred.delegated_email
+            )
+
+            print(f"✓ Credentials restored from database ({active_cred.credential_type})")
+            if google_service.is_authenticated():
+                print(f"✓ Auto-authenticated as {active_cred.delegated_email or 'OAuth user'}")
+
+        db.close()
+    except Exception as e:
+        print(f"⚠️  Could not restore credentials: {str(e)}")
 
 # CORS Configuration
 origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173").split(",")
@@ -101,7 +142,7 @@ async def get_status():
 
 
 @app.post("/api/auth/upload-credentials")
-async def upload_credentials(file: UploadFile = File(...)):
+async def upload_credentials(file: UploadFile = File(...), db: Session = Depends(get_db)):
     """Upload Google OAuth or Service Account credentials JSON file"""
     try:
         contents = await file.read()
@@ -117,12 +158,25 @@ async def upload_credentials(file: UploadFile = File(...)):
                 detail="Invalid credentials format. Please upload either an OAuth 2.0 Client ID credential (Desktop app) or a Service Account credential from Google Cloud Console."
             )
 
-        # Save credentials
+        # Determine credential type
+        credential_type = "service_account" if is_service_account else "oauth"
+
+        # Save to database
+        cred_service = CredentialService(db)
+        cred_service.save_credentials(
+            credentials_data=credentials_data,
+            credential_type=credential_type
+        )
+
+        # Also save to file for immediate use
         credentials_path = os.getenv("GOOGLE_CREDENTIALS_PATH", "./credentials.json")
         with open(credentials_path, "w") as f:
             json.dump(credentials_data, f)
 
-        return {"message": "Credentials uploaded successfully"}
+        return {
+            "message": "Credentials uploaded and saved successfully",
+            "credential_type": credential_type
+        }
 
     except json.JSONDecodeError:
         raise HTTPException(
@@ -136,7 +190,7 @@ async def upload_credentials(file: UploadFile = File(...)):
 
 
 @app.post("/api/auth/authenticate")
-async def authenticate():
+async def authenticate(db: Session = Depends(get_db)):
     """Start OAuth flow and authenticate with Google Workspace"""
     global google_service
 
@@ -154,6 +208,20 @@ async def authenticate():
         google_service.authenticate()
 
         info = google_service.get_admin_info()
+
+        # Save token to database
+        if os.path.exists(token_path):
+            with open(token_path, 'r') as f:
+                token_data = json.load(f)
+
+            cred_service = CredentialService(db)
+            active_cred = cred_service.get_active_credential()
+            if active_cred:
+                cred_service.update_token(active_cred.id, token_data)
+
+                # Update domain info
+                active_cred.domain = info.get("domain")
+                db.commit()
 
         return {
             "message": "Authentication successful",
@@ -183,7 +251,7 @@ async def authenticate():
 
 
 @app.post("/api/auth/authenticate-service-account")
-async def authenticate_service_account(request: dict):
+async def authenticate_service_account(request: dict, db: Session = Depends(get_db)):
     """Authenticate using service account with domain-wide delegation"""
     global google_service
 
@@ -209,6 +277,14 @@ async def authenticate_service_account(request: dict):
 
         # Get domain from delegated email
         domain = delegated_email.split('@')[1] if '@' in delegated_email else ''
+
+        # Update database with delegated email and domain
+        cred_service = CredentialService(db)
+        active_cred = cred_service.get_active_credential()
+        if active_cred:
+            active_cred.delegated_email = delegated_email
+            active_cred.domain = domain
+            db.commit()
 
         return {
             "message": "Service account authentication successful",
@@ -269,14 +345,21 @@ async def get_credential_type():
 
 
 @app.post("/api/auth/logout")
-async def logout():
-    """Logout and clear authentication"""
+async def logout(db: Session = Depends(get_db)):
+    """Logout and clear authentication (keeps credentials, removes token)"""
     global google_service
 
     try:
         token_path = os.getenv("GOOGLE_TOKEN_PATH", "./token.json")
         if os.path.exists(token_path):
             os.remove(token_path)
+
+        # Clear token from database (keep credentials)
+        cred_service = CredentialService(db)
+        active_cred = cred_service.get_active_credential()
+        if active_cred:
+            active_cred.token_data = None
+            db.commit()
 
         google_service = None
 
@@ -287,8 +370,8 @@ async def logout():
 
 
 @app.delete("/api/auth/credentials")
-async def delete_credentials():
-    """Delete uploaded credentials file"""
+async def delete_credentials(db: Session = Depends(get_db)):
+    """Delete uploaded credentials and clear database"""
     global google_service
 
     try:
@@ -302,6 +385,10 @@ async def delete_credentials():
         if os.path.exists(token_path):
             os.remove(token_path)
 
+        # Delete from database
+        cred_service = CredentialService(db)
+        cred_service.delete_all_credentials()
+
         # Reset service
         google_service = None
 
@@ -312,15 +399,24 @@ async def delete_credentials():
 
 
 @app.get("/api/auth/credentials-status")
-async def credentials_status():
-    """Check if credentials file exists"""
+async def credentials_status(db: Session = Depends(get_db)):
+    """Check if credentials exist in database or file"""
     try:
+        cred_service = CredentialService(db)
+        has_db_creds = cred_service.has_credentials()
+
+        active_cred = cred_service.get_active_credential()
+
         credentials_path = os.getenv("GOOGLE_CREDENTIALS_PATH", "./credentials.json")
-        exists = os.path.exists(credentials_path)
+        file_exists = os.path.exists(credentials_path)
 
         return {
-            "exists": exists,
-            "path": credentials_path if exists else None
+            "exists": has_db_creds or file_exists,
+            "in_database": has_db_creds,
+            "in_file": file_exists,
+            "credential_type": active_cred.credential_type if active_cred else None,
+            "domain": active_cred.domain if active_cred else None,
+            "delegated_email": active_cred.delegated_email if active_cred else None
         }
 
     except Exception as e:

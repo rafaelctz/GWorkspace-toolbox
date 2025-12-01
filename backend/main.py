@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, Depends
+from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -10,6 +10,7 @@ import json
 
 from services.google_workspace import GoogleWorkspaceService
 from services.credential_service import CredentialService
+from services.batch_processor import BatchProcessor
 from database.session import init_db, get_db
 
 load_dotenv()
@@ -479,7 +480,7 @@ async def get_organizational_units():
 
 @app.post("/api/tools/inject-attribute")
 async def inject_attribute(request: dict):
-    """Inject an attribute to users in selected OUs"""
+    """Inject an attribute to users in selected OUs (synchronous - legacy)"""
     global google_service
 
     if google_service is None or not google_service.is_authenticated():
@@ -505,6 +506,107 @@ async def inject_attribute(request: dict):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# Batch Processing Endpoints (Async)
+
+@app.post("/api/batch/inject-attribute")
+async def batch_inject_attribute(request: dict, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    """
+    Create a batch job to inject attribute asynchronously
+    Returns immediately with job UUID for status tracking
+    """
+    global google_service
+
+    if google_service is None or not google_service.is_authenticated():
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    ou_paths = request.get("ou_paths", [])
+    attribute = request.get("attribute")
+    value = request.get("value")
+
+    if not ou_paths:
+        raise HTTPException(status_code=400, detail="At least one OU path is required")
+    if not attribute:
+        raise HTTPException(status_code=400, detail="Attribute name is required")
+    if value is None or value == "":
+        raise HTTPException(status_code=400, detail="Value is required")
+
+    try:
+        # Create batch processor
+        processor = BatchProcessor(db, google_service)
+
+        # Create job and cache users
+        job = processor.create_job(
+            ou_paths=ou_paths,
+            attribute=attribute,
+            value=value
+        )
+
+        # Start background processing
+        background_tasks.add_task(
+            _process_batch_job,
+            job_uuid=job.job_uuid
+        )
+
+        return {
+            "success": True,
+            "message": "Batch job created and processing started",
+            "job_uuid": job.job_uuid,
+            "total_users": job.total_users
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/batch/jobs/{job_uuid}")
+async def get_batch_job_status(job_uuid: str, db: Session = Depends(get_db)):
+    """Get status and progress of a specific batch job"""
+    global google_service
+
+    if google_service is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    try:
+        processor = BatchProcessor(db, google_service)
+        status = processor.get_job_status(job_uuid)
+        return status
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@app.get("/api/batch/jobs")
+async def list_batch_jobs(limit: int = 50, db: Session = Depends(get_db)):
+    """List all batch jobs ordered by creation date"""
+    global google_service
+
+    if google_service is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    try:
+        processor = BatchProcessor(db, google_service)
+        jobs = processor.get_all_jobs(limit=limit)
+        return {"jobs": jobs}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+def _process_batch_job(job_uuid: str):
+    """Background task to process a batch job"""
+    from database.session import SessionLocal
+
+    db = SessionLocal()
+    try:
+        # Need to get google_service from global or recreate it
+        global google_service
+        if google_service:
+            processor = BatchProcessor(db, google_service)
+            processor.process_job(job_uuid)
+    except Exception as e:
+        print(f"❌ Error processing batch job {job_uuid}: {str(e)}")
+    finally:
+        db.close()
 
 
 if __name__ == "__main__":

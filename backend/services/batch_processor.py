@@ -1,6 +1,7 @@
 """Service for batch processing attribute injections"""
 import json
 import uuid
+import time
 from datetime import datetime
 from typing import List, Dict, Optional
 from sqlalchemy.orm import Session
@@ -15,7 +16,9 @@ from services.api_retry import APIRetryHandler
 class BatchProcessor:
     """Handles batch processing of attribute injections with progress tracking"""
 
-    BATCH_SIZE = 50  # Process 50 users per batch to avoid API rate limits
+    BATCH_SIZE = 25  # Reduced from 50 to 25 for better rate limiting
+    API_CALL_DELAY = 0.033  # 33ms delay between API calls (~30 calls/sec, safe under 40/sec limit)
+    PROGRESS_COMMIT_INTERVAL = 5  # Commit progress every 5 users for real-time UI updates
 
     def __init__(self, db: Session, google_service: GoogleWorkspaceService):
         self.db = db
@@ -268,12 +271,15 @@ class BatchProcessor:
                 # Mark user as processing (no commit yet)
                 user.status = 'processing'
 
-                # Inject attribute
+                # Inject attribute with rate limiting
                 self._inject_attribute_to_user(
                     user_email=user.email,
                     attribute=job.attribute,
                     value=job.value
                 )
+
+                # Rate limiting: delay after each API call
+                time.sleep(self.API_CALL_DELAY)
 
                 # Mark user as success
                 user.status = 'success'
@@ -296,13 +302,16 @@ class BatchProcessor:
 
             # Update progress
             job.processed_users += 1
+            job.progress_percentage = (job.processed_users / job.total_users) * 100
+
+            # Commit progress every N users for real-time UI updates
+            if idx % self.PROGRESS_COMMIT_INTERVAL == 0:
+                self.db.commit()
+                print(f"[BatchProcessor] Batch {batch_number}: Progress committed - {idx}/{len(users)} users ({job.progress_percentage:.1f}% overall)")
 
             # Log progress every 10 users
-            if idx % 10 == 0:
+            elif idx % 10 == 0:
                 print(f"[BatchProcessor] Batch {batch_number}: Processed {idx}/{len(users)} users")
-
-        # Calculate progress percentage
-        job.progress_percentage = (job.processed_users / job.total_users) * 100
 
         # Mark batch as completed
         batch_op.status = 'completed'
@@ -311,8 +320,8 @@ class BatchProcessor:
         print(f"[BatchProcessor] Batch {batch_number} summary: {success_count} successful, {fail_count} failed")
         print(f"[BatchProcessor] Overall progress: {job.processed_users}/{job.total_users} ({job.progress_percentage:.1f}%)")
 
-        # Single commit for the entire batch
-        print(f"[BatchProcessor] Committing batch {batch_number} to database...")
+        # Final commit for the batch
+        print(f"[BatchProcessor] Committing final batch {batch_number} to database...")
         self.db.commit()
         print(f"[BatchProcessor] Batch {batch_number} committed successfully")
 

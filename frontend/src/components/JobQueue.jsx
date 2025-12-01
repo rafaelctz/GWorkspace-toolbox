@@ -12,8 +12,8 @@ function JobQueue({ apiBaseUrl }) {
 
   useEffect(() => {
     fetchJobs()
-    // Poll for updates every 3 seconds
-    const interval = setInterval(fetchJobs, 3000)
+    // Poll for updates every 2 seconds for more responsive UI
+    const interval = setInterval(fetchJobs, 2000)
     return () => clearInterval(interval)
   }, [apiBaseUrl])
 

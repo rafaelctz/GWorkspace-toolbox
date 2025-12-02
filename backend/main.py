@@ -118,7 +118,7 @@ class AliasExtractionResponse(BaseModel):
 @app.get("/")
 async def root():
     return {
-        "message": "DEA Toolbox API",
+        "message": "GWorkspace Toolbox API",
         "version": "2.0.0",
         "status": "running",
         "features": ["alias_extractor", "attribute_injector", "batch_processing", "database"]

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "================================================"
-echo "  DEA Toolbox - Development Environment Setup  "
+echo " GWorkspace Toolbox - Development Environment "
 echo "================================================"
 echo ""
 
@@ -55,7 +55,7 @@ echo ""
 
 # Start services
 echo "================================================"
-echo "  Starting DEA Toolbox Services  "
+echo "  Starting GWorkspace Toolbox Services  "
 echo "================================================"
 echo ""
 
@@ -74,7 +74,7 @@ FRONTEND_PID=$!
 
 echo ""
 echo "================================================"
-echo "  DEA Toolbox is Running!  "
+echo "  GWorkspace Toolbox is Running!  "
 echo "================================================"
 echo ""
 echo "📍 Frontend: http://localhost:3000"

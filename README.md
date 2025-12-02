@@ -1,6 +1,6 @@
-# DEA Toolbox
+# GWorkspace Toolbox
 
-A comprehensive toolkit for Active Directory administrators to manage SAML application integrations and SSO provider solutions.
+A comprehensive toolkit for Google Workspace administrators with tools for user management, group synchronization, and attribute injection.
 
 ## Features
 
@@ -67,7 +67,7 @@ docker-compose up -d
 ## Architecture
 
 ```
-DEA-toolbox/
+GWorkspace-toolbox/
 ├── backend/          # FastAPI Python backend
 ├── frontend/         # React + Vite frontend
 ├── docker-compose.yml

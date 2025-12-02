@@ -1,10 +1,10 @@
-# Contributing to DEA Toolbox
+# Contributing to GWorkspace Toolbox
 
-Thank you for your interest in contributing to DEA Toolbox! This document provides guidelines and information for contributors.
+Thank you for your interest in contributing to GWorkspace Toolbox! This document provides guidelines and information for contributors.
 
 ## Project Vision
 
-DEA Toolbox aims to be a comprehensive suite of tools for Active Directory administrators to manage SAML application integrations and SSO provider solutions. We're building practical, easy-to-use tools that solve real-world problems.
+GWorkspace Toolbox aims to be a comprehensive suite of tools for Google Workspace administrators to manage users, groups, and organizational units. We're building practical, easy-to-use tools that solve real-world problems.
 
 ## How to Contribute
 

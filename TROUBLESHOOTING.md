@@ -258,7 +258,7 @@ npm run dev
 **Check Backend is Running**:
 ```bash
 curl http://localhost:8000/
-# Should return: {"message":"DEA Toolbox API","version":"1.0.0","status":"running"}
+# Should return: {"message":"GWorkspace Toolbox API","version":"2.0.0","status":"running"}
 ```
 
 **Check CORS Configuration**:

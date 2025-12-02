@@ -1,6 +1,6 @@
 @echo off
 echo ================================================
-echo   DEA Toolbox - Development Environment Setup
+echo  GWorkspace Toolbox - Development Environment
 echo ================================================
 echo.
 
@@ -58,23 +58,23 @@ echo.
 
 REM Start services
 echo ================================================
-echo   Starting DEA Toolbox Services
+echo   Starting GWorkspace Toolbox Services
 echo ================================================
 echo.
 
 cd ..
 
 echo Starting Backend on http://localhost:8000...
-start "DEA Toolbox Backend" cmd /k "cd backend && venv\Scripts\activate.bat && python main.py"
+start "GWorkspace Toolbox Backend" cmd /k "cd backend && venv\Scripts\activate.bat && python main.py"
 
 timeout /t 3 /nobreak >nul
 
 echo Starting Frontend on http://localhost:3000...
-start "DEA Toolbox Frontend" cmd /k "cd frontend && npm run dev"
+start "GWorkspace Toolbox Frontend" cmd /k "cd frontend && npm run dev"
 
 echo.
 echo ================================================
-echo   DEA Toolbox is Running!
+echo   GWorkspace Toolbox is Running!
 echo ================================================
 echo.
 echo  Frontend: http://localhost:3000

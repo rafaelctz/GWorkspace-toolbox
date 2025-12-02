@@ -1,9 +1,9 @@
-# DEA Toolbox - Project Structure
+# GWorkspace Toolbox - Project Structure
 
 ## Directory Tree
 
 ```
-DEA-toolbox/
+GWorkspace-toolbox/
 │
 ├── backend/                          # Python FastAPI backend
 │   ├── services/                     # Business logic services

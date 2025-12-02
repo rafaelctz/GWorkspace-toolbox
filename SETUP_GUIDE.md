@@ -1,4 +1,4 @@
-# DEA Toolbox - Setup Guide
+# GWorkspace Toolbox - Setup Guide
 
 ## Prerequisites
 
@@ -9,14 +9,14 @@
 
 ## Google Cloud Console Setup
 
-Before using the DEA Toolbox, you need to set up a Google Cloud project and enable the necessary APIs.
+Before using the GWorkspace Toolbox, you need to set up a Google Cloud project and enable the necessary APIs.
 
 ### Step 1: Create a Google Cloud Project
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Click on the project dropdown at the top
 3. Click "New Project"
-4. Enter a project name (e.g., "DEA Toolbox")
+4. Enter a project name (e.g., "GWorkspace Toolbox")
 5. Click "Create"
 
 ### Step 2: Enable Admin SDK API
@@ -31,13 +31,13 @@ Before using the DEA Toolbox, you need to set up a Google Cloud project and enab
 2. Click "Create Credentials" > "OAuth client ID"
 3. If prompted, configure the OAuth consent screen:
    - User Type: Internal (if using Google Workspace) or External
-   - App name: DEA Toolbox
+   - App name: GWorkspace Toolbox
    - User support email: Your email
    - Developer contact: Your email
    - Save and continue
 4. Back to "Create OAuth client ID":
    - Application type: "Desktop app"
-   - Name: DEA Toolbox Desktop
+   - Name: GWorkspace Toolbox Desktop
    - Click "Create"
 5. Download the JSON file
 6. Save it (you'll upload this through the application interface)

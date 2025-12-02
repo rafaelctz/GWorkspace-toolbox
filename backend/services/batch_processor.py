@@ -452,7 +452,17 @@ class BatchProcessor:
             BatchJob.created_at.desc()
         ).limit(limit).all()
 
-        return [self.get_job_status(job.job_uuid) for job in jobs]
+        result = []
+        for job in jobs:
+            # Route to appropriate processor based on job type
+            if job.job_type == 'group_sync':
+                from services.group_sync_processor import GroupSyncProcessor
+                processor = GroupSyncProcessor(self.db, self.google_service)
+                result.append(processor.get_job_status(job.job_uuid))
+            else:
+                result.append(self.get_job_status(job.job_uuid))
+
+        return result
 
     def get_failed_users(self, job_uuid: str) -> List[Dict]:
         """

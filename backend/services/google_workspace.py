@@ -12,7 +12,8 @@ from googleapiclient.errors import HttpError
 
 SCOPES = [
     'https://www.googleapis.com/auth/admin.directory.user',  # Read/Write users
-    'https://www.googleapis.com/auth/admin.directory.orgunit.readonly'  # Read OUs
+    'https://www.googleapis.com/auth/admin.directory.orgunit.readonly',  # Read OUs
+    'https://www.googleapis.com/auth/admin.directory.group'  # Read/Write groups
 ]
 
 
@@ -601,3 +602,228 @@ class GoogleWorkspaceService:
             raise Exception(f"Error injecting attribute: {error}")
         except Exception as error:
             raise Exception(f"Error injecting attribute: {error}")
+
+    def create_group(self, group_email: str, group_name: str, description: str = '') -> Dict:
+        """
+        Create a new Google Group
+
+        Args:
+            group_email: Email address for the group (e.g., sales@domain.com)
+            group_name: Display name for the group
+            description: Description of the group
+
+        Returns:
+            Dict with group information
+
+        Raises:
+            Exception if group creation fails
+        """
+        if not self.is_authenticated():
+            raise Exception("Not authenticated")
+
+        try:
+            group_body = {
+                'email': group_email,
+                'name': group_name,
+                'description': description
+            }
+
+            result = self.service.groups().insert(body=group_body).execute()
+            print(f"[GoogleWorkspaceService] Created group: {group_email}")
+            return result
+
+        except HttpError as error:
+            if error.resp.status == 409:
+                print(f"[GoogleWorkspaceService] Group already exists: {group_email}")
+                return self.get_group(group_email)
+            raise Exception(f"Failed to create group: {error}")
+        except Exception as error:
+            raise Exception(f"Failed to create group: {error}")
+
+    def get_group(self, group_email: str) -> Optional[Dict]:
+        """
+        Get a Google Group by email
+
+        Args:
+            group_email: Email address of the group
+
+        Returns:
+            Dict with group information or None if not found
+        """
+        if not self.is_authenticated():
+            raise Exception("Not authenticated")
+
+        try:
+            result = self.service.groups().get(groupKey=group_email).execute()
+            return result
+        except HttpError as error:
+            if error.resp.status == 404:
+                return None
+            raise Exception(f"Failed to get group: {error}")
+        except Exception as error:
+            raise Exception(f"Failed to get group: {error}")
+
+    def add_group_member(self, group_email: str, member_email: str, role: str = 'MEMBER') -> Dict:
+        """
+        Add a member to a Google Group
+
+        Args:
+            group_email: Email address of the group
+            member_email: Email address of the member to add
+            role: Role of the member ('MEMBER', 'MANAGER', 'OWNER')
+
+        Returns:
+            Dict with member information
+
+        Raises:
+            Exception if adding member fails
+        """
+        if not self.is_authenticated():
+            raise Exception("Not authenticated")
+
+        try:
+            member_body = {
+                'email': member_email,
+                'role': role
+            }
+
+            result = self.service.members().insert(
+                groupKey=group_email,
+                body=member_body
+            ).execute()
+
+            return result
+
+        except HttpError as error:
+            if error.resp.status == 409:
+                # Member already exists
+                print(f"[GoogleWorkspaceService] Member already exists: {member_email} in {group_email}")
+                return {'email': member_email, 'status': 'already_exists'}
+            raise Exception(f"Failed to add member: {error}")
+        except Exception as error:
+            raise Exception(f"Failed to add member: {error}")
+
+    def get_group_members(self, group_email: str) -> List[str]:
+        """
+        Get all members of a Google Group
+
+        Args:
+            group_email: Email address of the group
+
+        Returns:
+            List of member email addresses
+        """
+        if not self.is_authenticated():
+            raise Exception("Not authenticated")
+
+        try:
+            members = []
+            page_token = None
+
+            while True:
+                params = {'groupKey': group_email}
+                if page_token:
+                    params['pageToken'] = page_token
+
+                result = self.service.members().list(**params).execute()
+
+                for member in result.get('members', []):
+                    members.append(member.get('email'))
+
+                page_token = result.get('nextPageToken')
+                if not page_token:
+                    break
+
+            return members
+
+        except HttpError as error:
+            if error.resp.status == 404:
+                return []
+            raise Exception(f"Failed to get group members: {error}")
+        except Exception as error:
+            raise Exception(f"Failed to get group members: {error}")
+
+    def remove_group_member(self, group_email: str, member_email: str) -> Dict:
+        """
+        Remove a member from a Google Group
+
+        Args:
+            group_email: Email address of the group
+            member_email: Email address of the member to remove
+
+        Returns:
+            Dict with removal status
+
+        Raises:
+            Exception if removing member fails
+        """
+        if not self.is_authenticated():
+            raise Exception("Not authenticated")
+
+        try:
+            self.service.members().delete(
+                groupKey=group_email,
+                memberKey=member_email
+            ).execute()
+
+            print(f"[GoogleWorkspaceService] Removed member: {member_email} from {group_email}")
+            return {'email': member_email, 'status': 'removed'}
+
+        except HttpError as error:
+            if error.resp.status == 404:
+                # Member doesn't exist in group
+                print(f"[GoogleWorkspaceService] Member not found: {member_email} in {group_email}")
+                return {'email': member_email, 'status': 'not_found'}
+            raise Exception(f"Failed to remove member: {error}")
+        except Exception as error:
+            raise Exception(f"Failed to remove member: {error}")
+
+    def get_users_in_ou(self, ou_path: str) -> List[Dict]:
+        """
+        Get all users in a specific Organizational Unit
+
+        Args:
+            ou_path: Path to the organizational unit (e.g., /Sales)
+
+        Returns:
+            List of dicts with user information (email, name, orgUnitPath)
+        """
+        if not self.is_authenticated():
+            raise Exception("Not authenticated")
+
+        try:
+            users = []
+            page_token = None
+
+            while True:
+                params = {
+                    'customer': 'my_customer',
+                    'maxResults': int(os.getenv("MAX_RESULTS_PER_PAGE", 500)),
+                    'projection': 'basic',
+                    'query': f"orgUnitPath='{ou_path}'"
+                }
+                if page_token:
+                    params['pageToken'] = page_token
+
+                result = self.service.users().list(**params).execute()
+
+                for user in result.get('users', []):
+                    # Only include users directly in this OU or its sub-OUs
+                    user_ou = user.get('orgUnitPath', '')
+                    if user_ou == ou_path or user_ou.startswith(ou_path + '/'):
+                        users.append({
+                            'email': user.get('primaryEmail'),
+                            'name': user.get('name', {}).get('fullName', ''),
+                            'orgUnitPath': user_ou
+                        })
+
+                page_token = result.get('nextPageToken')
+                if not page_token:
+                    break
+
+            return users
+
+        except HttpError as error:
+            raise Exception(f"Failed to get users in OU: {error}")
+        except Exception as error:
+            raise Exception(f"Failed to get users in OU: {error}")

@@ -1,7 +1,22 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import axios from 'axios'
-import './JobCard.css'
+import {
+  Clock,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  ChevronDown,
+  ChevronRight,
+  RotateCcw,
+  Download,
+  Eye,
+  EyeOff,
+  Calendar,
+  Users,
+  AlertTriangle,
+  TrendingUp
+} from 'lucide-react'
 
 function JobCard({ job, apiBaseUrl }) {
   const { t } = useTranslation()
@@ -11,23 +26,33 @@ function JobCard({ job, apiBaseUrl }) {
   const [showFailedUsers, setShowFailedUsers] = useState(false)
   const [restarting, setRestarting] = useState(false)
 
-  const getStatusClass = (status) => {
+  const getStatusColors = (status) => {
     switch (status) {
-      case 'pending': return 'status-pending'
-      case 'running': return 'status-running'
-      case 'completed': return 'status-completed'
-      case 'failed': return 'status-failed'
-      default: return ''
+      case 'pending':
+        return { bg: 'bg-gray-100', text: 'text-gray-700', border: 'border-gray-200' }
+      case 'running':
+        return { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200' }
+      case 'completed':
+        return { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-200' }
+      case 'failed':
+        return { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200' }
+      default:
+        return { bg: 'bg-gray-100', text: 'text-gray-700', border: 'border-gray-200' }
     }
   }
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'pending': return '◷'
-      case 'running': return '●'
-      case 'completed': return '✓'
-      case 'failed': return '✗'
-      default: return '•'
+      case 'pending':
+        return <Clock className="w-4 h-4" />
+      case 'running':
+        return <Loader2 className="w-4 h-4 animate-spin" />
+      case 'completed':
+        return <CheckCircle2 className="w-4 h-4" />
+      case 'failed':
+        return <XCircle className="w-4 h-4" />
+      default:
+        return <Clock className="w-4 h-4" />
     }
   }
 
@@ -49,7 +74,6 @@ function JobCard({ job, apiBaseUrl }) {
 
   const fetchFailedUsers = async () => {
     if (failedUsers.length > 0) {
-      // Already loaded
       setShowFailedUsers(!showFailedUsers)
       return
     }
@@ -75,7 +99,6 @@ function JobCard({ job, apiBaseUrl }) {
     setRestarting(true)
     try {
       await axios.post(`${apiBaseUrl}/api/batch/jobs/${job.job_uuid}/restart`)
-      // Job will automatically refresh via polling
     } catch (error) {
       console.error('Failed to restart job:', error)
       alert(error.response?.data?.detail || 'Failed to restart job')
@@ -84,195 +107,239 @@ function JobCard({ job, apiBaseUrl }) {
     }
   }
 
+  const statusColors = getStatusColors(job.status)
+
   return (
-    <div className={`job-card ${getStatusClass(job.status)}`}>
-      <div className="job-card-header" onClick={() => setExpanded(!expanded)}>
-        <div className="job-status">
-          <span className="status-icon">{getStatusIcon(job.status)}</span>
-          <span className="status-text">
-            {t(`tools.jobQueue.status.${job.status}`)}
-          </span>
-        </div>
+    <div className={`border ${statusColors.border} rounded-lg overflow-hidden transition-all hover:shadow-sm`}>
+      <div
+        className={`${statusColors.bg} px-5 py-4 cursor-pointer`}
+        onClick={() => setExpanded(!expanded)}
+      >
+        <div className="flex items-start gap-4">
+          <div className={`flex items-center gap-2 ${statusColors.text} font-medium text-sm`}>
+            {getStatusIcon(job.status)}
+            <span>{t(`tools.jobQueue.status.${job.status}`)}</span>
+          </div>
 
-        <div className="job-info">
-          <div className="job-attribute">
-            <strong>{job.attribute}</strong> = {job.value}
-          </div>
-          <div className="job-ou">
-            {formatOUPaths(job.ou_paths)}
-          </div>
-        </div>
-
-        <div className="job-stats">
-          <div className="stat">
-            <span className="stat-label">{t('tools.jobQueue.totalUsers')}</span>
-            <span className="stat-value">{job.total_users}</span>
-          </div>
-          {job.status === 'running' && (
-            <div className="stat">
-              <span className="stat-label">{t('tools.jobQueue.progress')}</span>
-              <span className="stat-value">{Math.round(job.progress_percentage)}%</span>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm text-gray-900 truncate">
+              <span className="font-semibold">{job.attribute}</span>
+              <span className="mx-2 text-gray-400">→</span>
+              <span className="font-medium">{job.value}</span>
             </div>
-          )}
-          {job.status === 'completed' && (
-            <>
-              <div className="stat success">
-                <span className="stat-label">{t('tools.jobQueue.successful')}</span>
-                <span className="stat-value">{job.successful_users}</span>
-              </div>
-              {job.failed_users > 0 && (
-                <div className="stat failed">
-                  <span className="stat-label">{t('tools.jobQueue.failed')}</span>
-                  <span className="stat-value">{job.failed_users}</span>
-                </div>
-              )}
-            </>
-          )}
-        </div>
+            <div className="text-sm text-gray-600 truncate mt-1">
+              {formatOUPaths(job.ou_paths)}
+            </div>
+          </div>
 
-        <button className="expand-button" type="button">
-          {expanded ? '▼' : '▶'}
-        </button>
+          <div className="flex items-center gap-4 flex-shrink-0">
+            <div className="flex items-center gap-2 text-sm">
+              <Users className="w-4 h-4 text-gray-500" />
+              <span className="font-medium text-gray-700">{job.total_users}</span>
+            </div>
+            {job.status === 'running' && (
+              <div className="flex items-center gap-2 text-sm">
+                <TrendingUp className="w-4 h-4 text-blue-600" />
+                <span className="font-medium text-blue-700">{Math.round(job.progress_percentage)}%</span>
+              </div>
+            )}
+            {job.status === 'completed' && (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1 text-sm">
+                  <CheckCircle2 className="w-4 h-4 text-green-600" />
+                  <span className="font-medium text-green-700">{job.successful_users}</span>
+                </div>
+                {job.failed_users > 0 && (
+                  <div className="flex items-center gap-1 text-sm">
+                    <XCircle className="w-4 h-4 text-red-600" />
+                    <span className="font-medium text-red-700">{job.failed_users}</span>
+                  </div>
+                )}
+              </div>
+            )}
+            <button
+              className="text-gray-600 hover:text-gray-900 transition-colors"
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                setExpanded(!expanded)
+              }}
+            >
+              {expanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
       </div>
 
       {(job.status === 'running' || job.status === 'completed') && (
-        <div className="progress-bar-container">
+        <div className="relative h-2 bg-gray-200">
           <div
-            className="progress-bar-fill"
+            className={`absolute top-0 left-0 h-full transition-all ${
+              job.status === 'completed' ? 'bg-green-500' : 'bg-blue-500'
+            }`}
             style={{ width: `${job.progress_percentage}%` }}
           />
-          <span className="progress-text">
-            {job.processed_users} / {job.total_users} {t('tools.jobQueue.usersProcessed')}
-          </span>
         </div>
       )}
 
       {expanded && (
-        <div className="job-card-details">
-          <div className="detail-row">
-            <span className="detail-label">{t('tools.jobQueue.jobId')}:</span>
-            <span className="detail-value mono">{job.job_uuid}</span>
-          </div>
+        <div className="bg-white px-5 py-4 border-t border-gray-200">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <div>
+                <span className="text-gray-500">{t('tools.jobQueue.jobId')}:</span>
+                <span className="ml-2 font-mono text-gray-700 text-xs">{job.job_uuid}</span>
+              </div>
 
-          <div className="detail-row">
-            <span className="detail-label">{t('tools.jobQueue.created')}:</span>
-            <span className="detail-value">{formatDate(job.created_at)}</span>
-          </div>
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-gray-400" />
+                <span className="text-gray-500">{t('tools.jobQueue.created')}:</span>
+                <span className="text-gray-700">{formatDate(job.created_at)}</span>
+              </div>
 
-          {job.started_at && (
-            <div className="detail-row">
-              <span className="detail-label">{t('tools.jobQueue.started')}:</span>
-              <span className="detail-value">{formatDate(job.started_at)}</span>
-            </div>
-          )}
-
-          {job.completed_at && (
-            <div className="detail-row">
-              <span className="detail-label">{t('tools.jobQueue.completed')}:</span>
-              <span className="detail-value">{formatDate(job.completed_at)}</span>
-            </div>
-          )}
-
-          {job.error_message && (
-            <div className="detail-row error">
-              <span className="detail-label">{t('tools.jobQueue.error')}:</span>
-              <span className="detail-value">{job.error_message}</span>
-            </div>
-          )}
-
-          {job.user_status_counts && (
-            <div className="user-counts">
-              <h4>{t('tools.jobQueue.userBreakdown')}:</h4>
-              <div className="counts-grid">
-                <div className="count-item">
-                  <span className="count-label">{t('tools.jobQueue.userStatus.pending')}:</span>
-                  <span className="count-value">{job.user_status_counts.pending || 0}</span>
+              {job.started_at && (
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-gray-400" />
+                  <span className="text-gray-500">{t('tools.jobQueue.started')}:</span>
+                  <span className="text-gray-700">{formatDate(job.started_at)}</span>
                 </div>
-                <div className="count-item">
-                  <span className="count-label">{t('tools.jobQueue.userStatus.processing')}:</span>
-                  <span className="count-value">{job.user_status_counts.processing || 0}</span>
+              )}
+
+              {job.completed_at && (
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-gray-400" />
+                  <span className="text-gray-500">{t('tools.jobQueue.completed')}:</span>
+                  <span className="text-gray-700">{formatDate(job.completed_at)}</span>
                 </div>
-                <div className="count-item success">
-                  <span className="count-label">{t('tools.jobQueue.userStatus.success')}:</span>
-                  <span className="count-value">{job.user_status_counts.success || 0}</span>
-                </div>
-                <div className="count-item failed">
-                  <span className="count-label">{t('tools.jobQueue.userStatus.failed')}:</span>
-                  <span className="count-value">{job.user_status_counts.failed || 0}</span>
+              )}
+            </div>
+
+            {job.error_message && (
+              <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <AlertTriangle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-red-800">{t('tools.jobQueue.error')}:</span>
+                  <span className="text-sm text-red-700 ml-2">{job.error_message}</span>
                 </div>
               </div>
+            )}
+
+            {job.user_status_counts && (
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  {t('tools.jobQueue.userBreakdown')}
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="text-sm">
+                    <span className="text-gray-500">{t('tools.jobQueue.userStatus.pending')}:</span>
+                    <span className="ml-2 font-medium text-gray-700">{job.user_status_counts.pending || 0}</span>
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-gray-500">{t('tools.jobQueue.userStatus.processing')}:</span>
+                    <span className="ml-2 font-medium text-gray-700">{job.user_status_counts.processing || 0}</span>
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-green-600">{t('tools.jobQueue.userStatus.success')}:</span>
+                    <span className="ml-2 font-medium text-green-700">{job.user_status_counts.success || 0}</span>
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-red-600">{t('tools.jobQueue.userStatus.failed')}:</span>
+                    <span className="ml-2 font-medium text-red-700">{job.user_status_counts.failed || 0}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-100">
+              {(job.status === 'pending' || job.status === 'failed') && (
+                <button
+                  onClick={restartJob}
+                  className="inline-flex items-center gap-2 px-3 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium disabled:opacity-50"
+                  disabled={restarting}
+                >
+                  {restarting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Restarting...
+                    </>
+                  ) : (
+                    <>
+                      <RotateCcw className="w-4 h-4" />
+                      Restart Job
+                    </>
+                  )}
+                </button>
+              )}
+
+              {job.status === 'completed' && job.job_type === 'alias_extraction' && job.file_path && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    const downloadUrl = `${apiBaseUrl}/api/tools/download-aliases?file_path=${encodeURIComponent(job.file_path)}`
+                    window.open(downloadUrl, '_blank')
+                  }}
+                  className="inline-flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                >
+                  <Download className="w-4 h-4" />
+                  Download CSV
+                </button>
+              )}
+
+              {job.failed_users > 0 && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    fetchFailedUsers()
+                  }}
+                  className="inline-flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium disabled:opacity-50"
+                  disabled={loadingFailed}
+                >
+                  {loadingFailed ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      {t('common.loading')}
+                    </>
+                  ) : showFailedUsers ? (
+                    <>
+                      <EyeOff className="w-4 h-4" />
+                      Hide Failed Users ({job.failed_users})
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="w-4 h-4" />
+                      View Failed Users ({job.failed_users})
+                    </>
+                  )}
+                </button>
+              )}
             </div>
-          )}
 
-          {(job.status === 'pending' || job.status === 'failed') && (
-            <div className="job-actions">
-              <button
-                onClick={restartJob}
-                className="btn-restart"
-                disabled={restarting}
-              >
-                {restarting ? 'Restarting...' : 'Restart Job'}
-              </button>
-            </div>
-          )}
-
-          {job.status === 'completed' && job.job_type === 'alias_extraction' && job.file_path && (
-            <div className="job-actions">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  const downloadUrl = `${apiBaseUrl}/api/tools/download-aliases?file_path=${encodeURIComponent(job.file_path)}`
-                  window.open(downloadUrl, '_blank')
-                }}
-                className="btn-download"
-              >
-                Download CSV
-              </button>
-            </div>
-          )}
-
-          {job.failed_users > 0 && (
-            <div className="failed-users-section">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  fetchFailedUsers()
-                }}
-                className="btn-view-failed"
-                disabled={loadingFailed}
-              >
-                {loadingFailed
-                  ? t('common.loading')
-                  : showFailedUsers
-                    ? `Hide Failed Users (${job.failed_users})`
-                    : `View Failed Users (${job.failed_users})`
-                }
-              </button>
-
-              {showFailedUsers && failedUsers.length > 0 && (
-                <div className="failed-users-list">
-                  <table className="failed-users-table">
+            {showFailedUsers && failedUsers.length > 0 && (
+              <div className="mt-3 border border-gray-200 rounded-lg overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
                     <thead>
-                      <tr>
-                        <th>Email</th>
-                        <th>OU Path</th>
-                        <th>Error</th>
+                      <tr className="bg-gray-50 border-b border-gray-200">
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">OU Path</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Error</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-gray-200">
                       {failedUsers.map((user, index) => (
-                        <tr key={index}>
-                          <td className="user-email">{user.email}</td>
-                          <td className="user-ou">{user.ou_path}</td>
-                          <td className="user-error">{user.error_message}</td>
+                        <tr key={index} className="hover:bg-gray-50">
+                          <td className="px-4 py-2 font-mono text-xs text-gray-700">{user.email}</td>
+                          <td className="px-4 py-2 text-xs text-gray-600">{user.ou_path}</td>
+                          <td className="px-4 py-2 text-xs text-red-600">{user.error_message}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-              )}
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

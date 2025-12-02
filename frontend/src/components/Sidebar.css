@@ -131,3 +131,53 @@
 .sidebar-nav::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
 }
+
+/* Collapsed sidebar styles */
+.sidebar.collapsed {
+  width: 70px;
+  transition: width 0.3s ease;
+}
+
+.sidebar:not(.collapsed) {
+  transition: width 0.3s ease;
+}
+
+.sidebar-toggle {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: background 0.2s;
+  margin-left: auto;
+}
+
+.sidebar-toggle:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sidebar.collapsed .sidebar-header {
+  padding: 1rem 0.5rem;
+  justify-content: center;
+}
+
+.sidebar.collapsed .sidebar-item {
+  padding: 1rem;
+  justify-content: center;
+}
+
+.sidebar.collapsed .sidebar-item-icon {
+  font-size: 1.75rem;
+}
+
+.sidebar.collapsed .sidebar-warning {
+  display: none;
+}

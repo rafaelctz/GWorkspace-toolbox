@@ -1,6 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel
 from typing import Optional, List
 from sqlalchemy.orm import Session
@@ -13,6 +13,7 @@ from datetime import datetime
 from services.google_workspace import GoogleWorkspaceService
 from services.credential_service import CredentialService
 from services.batch_processor import BatchProcessor
+from services.group_sync_processor import GroupSyncProcessor
 from services.service_manager import ServiceManager
 from database.session import init_db, get_db
 
@@ -745,6 +746,292 @@ async def restart_batch_job(job_uuid: str, background_tasks: BackgroundTasks, db
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.post("/api/batch/sync-ou-groups")
+async def sync_ou_groups(request: dict, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    """
+    Create a saved configuration and sync job for OU to Group synchronization
+    Returns immediately with job UUID and config UUID for status tracking
+    """
+    try:
+        google_service = ServiceManager.get_service()
+
+        if not google_service.is_authenticated():
+            raise HTTPException(status_code=401, detail="Not authenticated")
+
+        ou_paths = request.get("ou_paths", [])
+        group_email = request.get("group_email")
+        group_name = request.get("group_name", "")
+        group_description = request.get("group_description", "")
+
+        if not ou_paths:
+            raise HTTPException(status_code=400, detail="At least one OU path is required")
+
+        if not group_email:
+            raise HTTPException(status_code=400, detail="Group email is required")
+
+        # Get domain from admin info
+        admin_info = google_service.get_admin_info()
+        domain = admin_info.get("domain")
+        if not domain:
+            raise HTTPException(status_code=400, detail="Could not determine domain from authenticated user")
+
+        # Create group sync processor
+        processor = GroupSyncProcessor(db, google_service)
+
+        # Create or update config
+        config = processor.create_or_update_config(
+            ou_paths=ou_paths,
+            group_email=group_email,
+            group_name=group_name or group_email.split('@')[0],
+            group_description=group_description,
+            domain=domain
+        )
+
+        # Create job from config
+        job = processor.create_sync_job(config.config_uuid)
+
+        # Start background processing
+        background_tasks.add_task(
+            _process_group_sync_job,
+            job_uuid=job.job_uuid
+        )
+
+        return {
+            "success": True,
+            "message": "Group sync configuration saved and job created",
+            "job_uuid": job.job_uuid,
+            "config_uuid": config.config_uuid,
+            "ou_count": len(ou_paths),
+            "group_email": group_email
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/group-sync/configs")
+async def get_group_sync_configs(db: Session = Depends(get_db)):
+    """Get all saved group sync configurations"""
+    try:
+        google_service = ServiceManager.get_service()
+
+        if not google_service.is_authenticated():
+            raise HTTPException(status_code=401, detail="Not authenticated")
+
+        processor = GroupSyncProcessor(db, google_service)
+        configs = processor.get_all_configs()
+
+        return {"configs": configs}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/group-sync/configs/{config_uuid}/sync")
+async def resync_config(config_uuid: str, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    """Re-run sync for a saved configuration"""
+    try:
+        google_service = ServiceManager.get_service()
+
+        if not google_service.is_authenticated():
+            raise HTTPException(status_code=401, detail="Not authenticated")
+
+        processor = GroupSyncProcessor(db, google_service)
+
+        # Create job from config
+        job = processor.create_sync_job(config_uuid)
+
+        # Start background processing
+        background_tasks.add_task(
+            _process_group_sync_job,
+            job_uuid=job.job_uuid
+        )
+
+        return {
+            "success": True,
+            "message": "Group sync job created from saved configuration",
+            "job_uuid": job.job_uuid,
+            "config_uuid": config_uuid
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/api/group-sync/configs/{config_uuid}")
+async def delete_config(config_uuid: str, db: Session = Depends(get_db)):
+    """Delete a saved group sync configuration"""
+    try:
+        google_service = ServiceManager.get_service()
+
+        if not google_service.is_authenticated():
+            raise HTTPException(status_code=401, detail="Not authenticated")
+
+        processor = GroupSyncProcessor(db, google_service)
+        success = processor.delete_config(config_uuid)
+
+        if not success:
+            raise HTTPException(status_code=404, detail=f"Configuration {config_uuid} not found")
+
+        return {
+            "success": True,
+            "message": "Configuration deleted successfully"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/group-sync/configs/export-all")
+async def export_all_configs(db: Session = Depends(get_db)):
+    """Export all group sync configurations to JSON"""
+    try:
+        google_service = ServiceManager.get_service()
+
+        if not google_service.is_authenticated():
+            raise HTTPException(status_code=401, detail="Not authenticated")
+
+        processor = GroupSyncProcessor(db, google_service)
+        export_data = processor.export_all_configs()
+
+        # Generate filename with timestamp
+        timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        filename = f"group_sync_configs_{timestamp}.json"
+
+        # Return JSON file as download
+        return Response(
+            content=json.dumps(export_data, indent=2),
+            media_type="application/json",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"'
+            }
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/group-sync/configs/{config_uuid}/export")
+async def export_single_config(config_uuid: str, db: Session = Depends(get_db)):
+    """Export a single group sync configuration to JSON"""
+    try:
+        google_service = ServiceManager.get_service()
+
+        if not google_service.is_authenticated():
+            raise HTTPException(status_code=401, detail="Not authenticated")
+
+        processor = GroupSyncProcessor(db, google_service)
+        export_data = processor.export_config(config_uuid)
+
+        if not export_data:
+            raise HTTPException(status_code=404, detail=f"Configuration {config_uuid} not found")
+
+        # Generate filename with config name
+        config_name = export_data['configs'][0]['group_email'].replace('@', '_').replace('.', '_')
+        filename = f"group_sync_config_{config_name}.json"
+
+        # Return JSON file as download
+        return Response(
+            content=json.dumps(export_data, indent=2),
+            media_type="application/json",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"'
+            }
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/group-sync/configs/import")
+async def import_configs(file: UploadFile = File(...), db: Session = Depends(get_db)):
+    """Import group sync configurations from JSON file"""
+    try:
+        google_service = ServiceManager.get_service()
+
+        if not google_service.is_authenticated():
+            raise HTTPException(status_code=401, detail="Not authenticated")
+
+        # Validate file type
+        if not file.filename.endswith('.json'):
+            raise HTTPException(status_code=400, detail="Only JSON files are supported")
+
+        # Read and parse JSON file
+        content = await file.read()
+        try:
+            import_data = json.loads(content)
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=400, detail="Invalid JSON file")
+
+        # Import configurations
+        processor = GroupSyncProcessor(db, google_service)
+        result = processor.import_configs(import_data)
+
+        return {
+            "success": True,
+            "message": f"Imported {result['imported']} configurations, skipped {result['skipped']}, failed {result['failed']}",
+            "imported": result['imported'],
+            "skipped": result['skipped'],
+            "failed": result['failed'],
+            "details": result.get('details', [])
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/group-sync/configs/sync-all")
+async def sync_all_configs(background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    """Sync all saved configurations sequentially"""
+    try:
+        google_service = ServiceManager.get_service()
+
+        if not google_service.is_authenticated():
+            raise HTTPException(status_code=401, detail="Not authenticated")
+
+        processor = GroupSyncProcessor(db, google_service)
+
+        # Get all configs
+        configs = processor.get_all_configs()
+
+        if not configs:
+            raise HTTPException(status_code=404, detail="No configurations found")
+
+        # Create jobs for all configs
+        job_uuids = []
+        for config in configs:
+            try:
+                job = processor.create_sync_job(config['config_uuid'])
+                job_uuids.append(job.job_uuid)
+
+                # Start background processing for this job
+                background_tasks.add_task(
+                    _process_group_sync_job,
+                    job_uuid=job.job_uuid
+                )
+            except Exception as e:
+                print(f"[sync_all_configs] Failed to create job for config {config['config_uuid']}: {str(e)}")
+
+        return {
+            "success": True,
+            "message": f"Created {len(job_uuids)} sync jobs",
+            "total_configs": len(configs),
+            "jobs_created": len(job_uuids),
+            "job_uuids": job_uuids
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 def _process_batch_job(job_uuid: str):
     """Background task to process a batch job"""
     from database.session import SessionLocal
@@ -850,6 +1137,57 @@ def _process_alias_extraction_job(job_uuid: str):
             pass
     finally:
         print(f"[_process_alias_extraction_job] Closing database session for job {job_uuid}")
+        db.close()
+
+
+def _process_group_sync_job(job_uuid: str):
+    """Background task to process a group sync job"""
+    from database.session import SessionLocal
+    import traceback
+
+    print(f"[_process_group_sync_job] Starting group sync for job {job_uuid}")
+    db = SessionLocal()
+
+    try:
+        # Get Google service
+        print(f"[_process_group_sync_job] Getting service from ServiceManager...")
+        google_service = ServiceManager.get_service()
+
+        if not google_service or not google_service.is_authenticated():
+            print(f"[_process_group_sync_job] ERROR: Service not authenticated!")
+            # Mark job as failed
+            from database.models import BatchJob
+            job = db.query(BatchJob).filter(BatchJob.job_uuid == job_uuid).first()
+            if job:
+                job.status = 'failed'
+                job.error_message = "Google service not available or not authenticated"
+                job.completed_at = datetime.now()
+                db.commit()
+            return
+
+        # Create processor and run the job
+        processor = GroupSyncProcessor(db, google_service)
+        processor.process_job(job_uuid)
+
+        print(f"[_process_group_sync_job] Completed successfully")
+
+    except Exception as e:
+        print(f"[_process_group_sync_job] ❌ EXCEPTION: {str(e)}")
+        traceback.print_exc()
+
+        # Mark job as failed
+        try:
+            from database.models import BatchJob
+            job = db.query(BatchJob).filter(BatchJob.job_uuid == job_uuid).first()
+            if job:
+                job.status = 'failed'
+                job.error_message = str(e)
+                job.completed_at = datetime.now()
+                db.commit()
+        except:
+            pass
+    finally:
+        print(f"[_process_group_sync_job] Closing database session for job {job_uuid}")
         db.close()
 
 

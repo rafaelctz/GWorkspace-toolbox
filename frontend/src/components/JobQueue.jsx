@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import axios from 'axios'
+import { ListTodo, Activity, Loader2 } from 'lucide-react'
 import JobCard from './JobCard'
-import './JobQueue.css'
 
 function JobQueue({ apiBaseUrl, jobType }) {
   const { t } = useTranslation()
@@ -42,12 +42,14 @@ function JobQueue({ apiBaseUrl, jobType }) {
 
   if (loading && jobs.length === 0) {
     return (
-      <div className="job-queue">
-        <div className="job-queue-header">
-          <h3>{t('tools.jobQueue.title')}</h3>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <ListTodo className="w-5 h-5 text-gray-700" />
+          <h3 className="text-lg font-semibold text-gray-800">{t('tools.jobQueue.title')}</h3>
         </div>
-        <div className="loading-message">
-          {t('tools.jobQueue.loading')}
+        <div className="flex items-center justify-center gap-3 py-8">
+          <Loader2 className="w-5 h-5 animate-spin text-primary-600" />
+          <span className="text-gray-600">{t('tools.jobQueue.loading')}</span>
         </div>
       </div>
     )
@@ -55,11 +57,12 @@ function JobQueue({ apiBaseUrl, jobType }) {
 
   if (error) {
     return (
-      <div className="job-queue">
-        <div className="job-queue-header">
-          <h3>{t('tools.jobQueue.title')}</h3>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <ListTodo className="w-5 h-5 text-gray-700" />
+          <h3 className="text-lg font-semibold text-gray-800">{t('tools.jobQueue.title')}</h3>
         </div>
-        <div className="error-message">
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
           {error}
         </div>
       </div>
@@ -68,11 +71,12 @@ function JobQueue({ apiBaseUrl, jobType }) {
 
   if (jobs.length === 0) {
     return (
-      <div className="job-queue">
-        <div className="job-queue-header">
-          <h3>{t('tools.jobQueue.title')}</h3>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <ListTodo className="w-5 h-5 text-gray-700" />
+          <h3 className="text-lg font-semibold text-gray-800">{t('tools.jobQueue.title')}</h3>
         </div>
-        <div className="empty-state">
+        <div className="text-center py-8 text-gray-500">
           <p>{t('tools.jobQueue.noJobs')}</p>
         </div>
       </div>
@@ -80,18 +84,21 @@ function JobQueue({ apiBaseUrl, jobType }) {
   }
 
   return (
-    <div className="job-queue">
-      <div className="job-queue-header">
-        <h3>{t('tools.jobQueue.title')}</h3>
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <ListTodo className="w-5 h-5 text-gray-700" />
+          <h3 className="text-xl font-semibold text-gray-900">{t('tools.jobQueue.title')}</h3>
+        </div>
         {hasActiveJobs && (
-          <span className="active-indicator">
-            <span className="pulse-dot"></span>
-            {t('tools.jobQueue.activeJobs')}
-          </span>
+          <div className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 border border-green-200 rounded-lg shadow-sm">
+            <Activity className="w-4 h-4 animate-pulse" />
+            <span className="text-sm font-medium">{t('tools.jobQueue.activeJobs')}</span>
+          </div>
         )}
       </div>
 
-      <div className="jobs-list">
+      <div className="space-y-4">
         {jobs.map(job => (
           <JobCard
             key={job.job_uuid}

@@ -148,7 +148,7 @@ function App() {
         <footer className="bg-white border-t border-gray-200 py-4">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <p className="text-center text-sm text-gray-600">
-              DEA Toolbox v1.0.0 - Tools for AD Administrators
+              GWorkspace Toolbox v1.0.0 - Tools for Google Workspace Administrators
             </p>
           </div>
         </footer>

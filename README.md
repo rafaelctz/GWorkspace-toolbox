@@ -1,6 +1,12 @@
 # GWorkspace Toolbox
 
-A comprehensive toolkit for Google Workspace administrators with tools for user management, group synchronization, and attribute injection.
+[![Docker Build](https://github.com/rafaelctz/GWorkspace-toolbox/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/rafaelctz/GWorkspace-toolbox/actions/workflows/docker-publish.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
+A comprehensive, open-source toolkit for Google Workspace administrators with tools for user management, group synchronization, and attribute injection.
+
+**🚀 Features automatic updates • 🌍 Multi-language support • 🐳 Docker-ready • 🔒 Branch-protected**
 
 ## Features
 
@@ -108,8 +114,48 @@ Once running, access the interactive API documentation at:
 
 ## Contributing
 
-This is an open-source project. Contributions are welcome!
+We welcome contributions from the community! 🎉
+
+### 🐛 Found a Bug?
+[Open an issue](https://github.com/rafaelctz/GWorkspace-toolbox/issues/new) with details about the problem.
+
+### 💡 Have an idea?
+[Submit a feature request](https://github.com/rafaelctz/GWorkspace-toolbox/issues/new) or start a discussion.
+
+### 🔨 Want to contribute code?
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Push to your branch (`git push origin feature/amazing-feature`)
+5. [Open a Pull Request](https://github.com/rafaelctz/GWorkspace-toolbox/compare)
+
+**Note:** The `main` branch is protected and requires:
+- ✅ Pull Request review and approval
+- ✅ CI/CD checks to pass (Docker builds)
+- ✅ No direct pushes allowed
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+## CI/CD Pipeline
+
+This project uses GitHub Actions for continuous integration:
+- ✅ Automatic Docker image builds on every push to `main`
+- ✅ Images published to GitHub Container Registry
+- ✅ Watchtower automatically updates running instances
+- ✅ Branch protection ensures code quality
+
+View builds: [GitHub Actions](https://github.com/rafaelctz/GWorkspace-toolbox/actions)
+
+## Community & Support
+
+- 📫 [Report Issues](https://github.com/rafaelctz/GWorkspace-toolbox/issues)
+- 💬 [Discussions](https://github.com/rafaelctz/GWorkspace-toolbox/discussions)
+- 📖 [Documentation](https://github.com/rafaelctz/GWorkspace-toolbox/wiki)
 
 ## License
 
-MIT License
+MIT License - see [LICENSE](LICENSE) for details
+
+---
+
+**Made with ❤️ for Google Workspace administrators**

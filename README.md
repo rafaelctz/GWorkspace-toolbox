@@ -64,19 +64,19 @@ npm run dev
 Docker deployment includes **automatic updates** via Watchtower - you'll always have the latest version!
 
 ```bash
-# Pull and run pre-built images
+# Pull and run pre-built image
 docker-compose up -d
 
 # Access the application
-# Frontend: http://localhost:3000
-# Backend API: http://localhost:8000
+# UI + API: http://localhost:8000
 ```
 
 **What's included:**
-- ✅ Pre-built, tested images from GitHub Container Registry
+- ✅ Single unified image (frontend + backend) from GitHub Container Registry
 - ✅ Automatic updates (checks daily for new versions)
 - ✅ Auto-cleanup of old images
 - ✅ No manual updates needed!
+- ✅ Access at http://localhost:8000 (both UI and API)
 
 **Manual update (if needed):**
 ```bash

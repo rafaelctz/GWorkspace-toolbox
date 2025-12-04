@@ -1,6 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional, List
 from sqlalchemy.orm import Session
@@ -1189,6 +1190,13 @@ def _process_group_sync_job(job_uuid: str):
     finally:
         print(f"[_process_group_sync_job] Closing database session for job {job_uuid}")
         db.close()
+
+
+# Mount static files (frontend) - must be last to not override API routes
+static_dir = os.path.join(os.path.dirname(__file__), "static")
+if os.path.exists(static_dir):
+    app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
+    print(f"✓ Serving frontend from {static_dir}")
 
 
 if __name__ == "__main__":

@@ -1,39 +1,24 @@
 version: '3.8'
 
-# Development docker-compose file for building images locally
+# Development docker-compose file for building the unified image locally
 # Use this when developing: docker-compose -f docker-compose.dev.yml up
 
 services:
-  backend:
+  app:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
-    container_name: gworkspace-toolbox-backend-dev
+    container_name: gworkspace-toolbox-dev
     ports:
       - "8000:8000"
     volumes:
-      - ./backend/credentials.json:/app/credentials.json
-      - ./backend/token.json:/app/token.json
-      - ./backend/exports:/app/exports
-      - ./backend:/app  # Mount source for hot reload
+      - ./credentials.json:/app/credentials.json
+      - ./token.json:/app/token.json
+      - ./exports:/app/exports
+      - ./database:/app/database
     environment:
       - PORT=8000
       - HOST=0.0.0.0
-      - CORS_ORIGINS=http://localhost:3000,http://localhost:80
-    restart: unless-stopped
-    networks:
-      - gworkspace-network
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: gworkspace-toolbox-frontend-dev
-    ports:
-      - "3000:80"
-    depends_on:
-      - backend
     restart: unless-stopped
     networks:
       - gworkspace-network

@@ -1,32 +1,19 @@
 version: '3.8'
 
 services:
-  backend:
-    image: ghcr.io/rafaelctz/gworkspace-toolbox-backend:latest
-    container_name: gworkspace-toolbox-backend
+  app:
+    image: ghcr.io/rafaelctz/gworkspace-toolbox:latest
+    container_name: gworkspace-toolbox
     ports:
       - "8000:8000"
     volumes:
-      - ./backend/credentials.json:/app/credentials.json
-      - ./backend/token.json:/app/token.json
-      - ./backend/exports:/app/exports
+      - ./credentials.json:/app/credentials.json
+      - ./token.json:/app/token.json
+      - ./exports:/app/exports
+      - ./database:/app/database
     environment:
       - PORT=8000
       - HOST=0.0.0.0
-      - CORS_ORIGINS=http://localhost:3000,http://localhost:80
-    restart: unless-stopped
-    networks:
-      - gworkspace-network
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true"
-
-  frontend:
-    image: ghcr.io/rafaelctz/gworkspace-toolbox-frontend:latest
-    container_name: gworkspace-toolbox-frontend
-    ports:
-      - "3000:80"
-    depends_on:
-      - backend
     restart: unless-stopped
     networks:
       - gworkspace-network

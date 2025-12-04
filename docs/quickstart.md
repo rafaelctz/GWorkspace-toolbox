@@ -27,12 +27,12 @@ The CSV file contains:
 - Alias email address
 - One row per alias
 
-### Use Cases
+### Use Cases for Schools
 
-- Audit all email aliases in your domain
-- Plan email migrations
-- Document current email routing
-- Compliance reporting
+- Audit all student and staff email aliases
+- Integrate with Student Information Systems
+- Document email routing for directory publishing
+- Prepare for email migrations
 
 ## Injecting Custom Attributes
 
@@ -41,18 +41,18 @@ The Attribute Injector lets you batch add custom attributes to users in specific
 ### Steps
 
 1. Click on **Attribute Injector** in the sidebar
-2. Enter or select the target **Organizational Unit** path (e.g., `/Sales/Regional`)
-3. Enter the **Attribute Name** (custom schema field)
-4. Enter the **Attribute Value** to assign
+2. Enter or select the target **Organizational Unit** path (e.g., `/Students/Grade-10`)
+3. Enter the **Attribute Name** (custom schema field like `SchoolInfo.role`)
+4. Enter the **Attribute Value** to assign (e.g., `student`, `teacher`, `staff`)
 5. Click **Inject Attributes** button
 6. Review the results showing how many users were updated
 
-### Use Cases
+### Use Cases for Schools
 
-- Assign department codes to all users in an OU
-- Set employee types for organizational filtering
-- Add cost center information for reporting
-- Apply any custom attribute at scale
+- Assign role types: "student", "teacher", "staff", "admin"
+- Set grade levels for students
+- Tag users by building or campus
+- Apply academic department classifications
 
 ## Synchronizing OU to Groups
 
@@ -61,11 +61,11 @@ The OU Group Sync feature automatically adds users from an Organizational Unit t
 ### Steps
 
 1. Click on **OU Group Sync** in the sidebar
-2. Enter the **Organizational Unit** path (e.g., `/Marketing`)
-3. Enter the **Target Group Email** (e.g., `marketing-team@company.com`)
+2. Enter the **Organizational Unit** path (e.g., `/Students/Grade-10`)
+3. Enter the **Target Group Email** (e.g., `grade10-students@school.edu`)
 4. Choose sync mode:
-   - **Smart Sync**: Only adds new members (preserves manually added users)
-   - **Full Sync**: Mirrors OU exactly (removes users not in OU)
+   - **Smart Sync**: Only adds new members (preserves manually added teachers/coaches)
+   - **Full Sync**: Mirrors OU exactly (removes users not in OU - use for pure class lists)
 5. Optionally enable **Schedule Sync** for automatic daily synchronization
 6. Click **Sync Now** to run immediately
 

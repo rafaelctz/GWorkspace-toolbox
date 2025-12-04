@@ -21,33 +21,37 @@ The generated CSV file contains the following columns:
 
 | Column | Description | Example |
 |--------|-------------|---------|
-| Primary Email | User's primary email address | john.doe@company.com |
-| Alias | The alias email address | j.doe@company.com |
+| Primary Email | User's primary email address | emily.johnson@school.edu |
+| Alias | The alias email address | e.johnson@school.edu |
 
 ### Sample CSV Output
 ```csv
 Primary Email,Alias
-john.doe@company.com,j.doe@company.com
-john.doe@company.com,jdoe@company.com
-jane.smith@company.com,j.smith@company.com
+emily.johnson@school.edu,e.johnson@school.edu
+emily.johnson@school.edu,ejohnson@school.edu
+michael.chen@school.edu,m.chen@school.edu
+sarah.williams@school.edu,swilliams@school.edu
 ```
 
-## Use Cases
+## Use Cases for Schools
+
+### Student Information System Integration
+Export aliases to match records between Google Workspace and your SIS (PowerSchool, Infinite Campus, etc.)
 
 ### Email Migration Planning
-Before migrating to a new email system, export all aliases to ensure they're preserved in the migration process.
+Before migrating to a new email system, export all aliases to ensure student and staff aliases are preserved.
 
-### Compliance Auditing
-Generate regular reports of all email aliases for compliance and security audits.
+### Yearbook and Directory Publishing
+Generate accurate email listings for school directories and yearbooks.
 
-### Documentation
-Maintain up-to-date documentation of email routing and alias configuration.
+### Alumni Records
+Document email aliases for graduating students before archiving their accounts.
 
 ### Cleanup Operations
-Identify unused or redundant aliases for cleanup and optimization.
+Identify unused or redundant aliases, especially after student transfers or staff changes.
 
-### Cost Analysis
-Understand alias distribution across your organization for licensing and cost analysis.
+### Parent Communication Lists
+Identify all email addresses where parents can reach teachers and staff.
 
 ## Performance
 

@@ -1,10 +1,10 @@
 # GWorkspace Toolbox
 
-Welcome to GWorkspace Toolbox - a powerful suite of tools designed for Google Workspace administrators to streamline daily operations and management tasks.
+Welcome to GWorkspace Toolbox - a powerful suite of tools designed for Google Workspace administrators in schools and educational institutions to streamline daily operations and management tasks.
 
 ## Overview
 
-GWorkspace Toolbox provides a modern, user-friendly interface for managing Google Workspace operations that would otherwise require complex scripts or manual processes. Built with efficiency and ease of use in mind, it helps administrators save time and reduce errors.
+GWorkspace Toolbox provides a modern, user-friendly interface for managing Google Workspace operations that would otherwise require complex scripts or manual processes. Built specifically for educational administrators, it helps schools save time and reduce errors when managing students, faculty, and staff accounts.
 
 ## Key Features
 

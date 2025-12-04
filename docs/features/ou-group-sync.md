@@ -10,8 +10,8 @@ Keeping Google Groups synchronized with Organizational Units can be time-consumi
 
 ## How It Works
 
-1. **Specify OU**: Enter the organizational unit path (e.g., `/Marketing`)
-2. **Select Target Group**: Enter the Google Group email (e.g., `marketing-team@company.com`)
+1. **Specify OU**: Enter the organizational unit path (e.g., `/Students/Grade-10`)
+2. **Select Target Group**: Enter the Google Group email (e.g., `grade10-students@school.edu`)
 3. **Choose Sync Mode**: Smart Sync or Full Sync
 4. **Optional Scheduling**: Enable daily automatic synchronization
 5. **Sync**: Click "Sync Now" or let the schedule handle it
@@ -33,9 +33,9 @@ Keeping Google Groups synchronized with Organizational Units can be time-consumi
 
 **Example:**
 ```
-OU Members: alice@, bob@, carol@
-Group Before: alice@, dave@ (manually added)
-Group After: alice@, bob@, carol@, dave@
+OU Members: student1@, student2@, student3@
+Group Before: student1@, teacher@ (manually added)
+Group After: student1@, student2@, student3@, teacher@
 ```
 
 ### Full Sync
@@ -52,10 +52,10 @@ Group After: alice@, bob@, carol@, dave@
 
 **Example:**
 ```
-OU Members: alice@, bob@, carol@
-Group Before: alice@, dave@ (manually added)
-Group After: alice@, bob@, carol@
-Result: dave@ was removed
+OU Members: student1@, student2@, student3@
+Group Before: student1@, teacher@ (manually added)
+Group After: student1@, student2@, student3@
+Result: teacher@ was removed
 ```
 
 ⚠️ **Warning**: Full Sync will remove manually added members. Only use when you want the group to exactly match the OU.
@@ -86,74 +86,90 @@ The interface shows:
 - **Remove**: Click the "Delete" button next to a scheduled job
 - **Modify**: Delete the existing schedule and create a new one
 
-## Common Use Cases
+## Common Use Cases for Schools
 
-### Department Access Groups
+### Class Mailing Lists
 
-Automatically grant department access to resources:
-
-```
-OU: /Sales
-Group: sales-department@company.com
-Mode: Smart Sync
-Schedule: Enabled
-
-Result: All sales team members automatically get access to:
-- Shared drives
-- Internal sites
-- Department resources
-```
-
-### Team Mailing Lists
-
-Maintain team mailing lists automatically:
+Automatically maintain class email groups:
 
 ```
-OU: /Engineering/Backend
-Group: backend-team@company.com
+OU: /Students/Grade-10
+Group: grade10-students@school.edu
 Mode: Full Sync
 Schedule: Enabled
 
-Result: Group always reflects current backend team roster
+Result: All 10th grade students automatically in mailing list:
+- Teachers can email entire class
+- Updates when students transfer
+- Clean roster for school year
 ```
 
-### Project Groups
+### Faculty Department Groups
 
-Keep project groups up-to-date:
-
-```
-OU: /Projects/Phoenix
-Group: project-phoenix@company.com
-Mode: Smart Sync
-Schedule: Enabled
-
-Result: All project members included, plus any external stakeholders
-```
-
-### Onboarding Automation
-
-Automatically add new hires to appropriate groups:
+Keep faculty department groups current:
 
 ```
-OU: /New Hires/2024
-Group: orientation-2024@company.com
-Mode: Smart Sync
-Schedule: Enabled
-
-Result: New employees added to group as they're placed in OU
-```
-
-### Regional Distribution
-
-Sync regional teams for location-specific communication:
-
-```
-OU: /Europe/Germany
-Group: germany-team@company.com
+OU: /Faculty/Science
+Group: science-faculty@school.edu
 Mode: Full Sync
 Schedule: Enabled
 
-Result: Only German office members in group
+Result: Group always reflects current science department roster
+```
+
+### Student Clubs and Activities
+
+Manage extracurricular group memberships:
+
+```
+OU: /Students/Clubs/Robotics
+Group: robotics-club@school.edu
+Mode: Smart Sync
+Schedule: Enabled
+
+Result: All robotics club members included, plus coaches and mentors
+```
+
+### Grade Level Access
+
+Grant grade-appropriate resource access:
+
+```
+OU: /Students/Grade-12
+Group: seniors@school.edu
+Mode: Full Sync
+Schedule: Enabled
+
+Result: Seniors get access to:
+- Senior-only Classroom courses
+- College prep resources
+- Graduation planning materials
+```
+
+### New Student Onboarding
+
+Automatically add new students to orientation groups:
+
+```
+OU: /Students/New-2024
+Group: new-students-2024@school.edu
+Mode: Smart Sync
+Schedule: Enabled
+
+Result: New students added to orientation group as they're enrolled
+```
+
+### Campus Building Groups
+
+Sync users by physical campus or building:
+
+```
+OU: /Students/Elementary
+Group: elementary-campus@school.edu
+Mode: Full Sync
+Schedule: Enabled
+
+Result: Only elementary campus students and staff in group
 ```
 
 ## Permissions Required

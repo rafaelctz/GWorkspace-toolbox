@@ -10,9 +10,9 @@ Google Workspace supports custom user attributes through custom schemas. The Att
 
 ## How It Works
 
-1. **Select Target OU**: Enter the organizational unit path (e.g., `/Sales/Regional`)
+1. **Select Target OU**: Enter the organizational unit path (e.g., `/Students/Grade-12`)
 2. **Specify Attribute**: Enter the custom attribute name from your schema
-3. **Set Value**: Enter the value to assign to all users
+3. **Set Value**: Enter the value to assign to all users (e.g., "student", "staff", "teacher")
 4. **Inject**: Click "Inject Attributes" to apply changes
 5. **Review Results**: See how many users were updated successfully
 
@@ -24,78 +24,79 @@ Before using the Attribute Injector, you must create a custom schema in Google W
 1. Go to [Google Admin Console](https://admin.google.com)
 2. Navigate to **Directory** > **Users** > **Manage custom attributes**
 3. Click **Add Custom Attribute**
-4. Create your schema (e.g., "EmployeeInfo")
-5. Add fields (e.g., "department", "costCenter", "employeeType")
+4. Create your schema (e.g., "SchoolInfo")
+5. Add fields (e.g., "role", "gradeLevel", "building", "studentID")
 
 ## Usage Example
 
-### Scenario: Assign Department Code
+### Scenario: Assign Role to Students
 
-You want to assign department code "SALES-NA" to all users in the North American Sales OU.
+You want to assign the role "student" to all users in the Grade 12 OU.
 
 **Steps:**
-1. Organizational Unit: `/Sales/North America`
-2. Attribute Name: `EmployeeInfo.department`
-3. Attribute Value: `SALES-NA`
+1. Organizational Unit: `/Students/Grade-12`
+2. Attribute Name: `SchoolInfo.role`
+3. Attribute Value: `student`
 4. Click **Inject Attributes**
 
-**Result:** All users in `/Sales/North America` now have `department = "SALES-NA"`
+**Result:** All users in `/Students/Grade-12` now have `role = "student"`
 
 ## Attribute Name Format
 
-Attributes must be specified in the format: `SchemaName.FieldName`
+Attributes are specified in the format: `SchemaName.FieldName`
 
-**Examples:**
-- `EmployeeInfo.department`
-- `EmployeeInfo.costCenter`
-- `EmployeeInfo.employeeType`
-- `CustomData.region`
+**Simple Examples:**
+- `SchoolInfo.role` with values like: `student`, `teacher`, `staff`, `admin`
+- `SchoolInfo.gradeLevel` with values like: `K`, `1`, `2`, `12`, `Graduate`
+- `SchoolInfo.building` with values like: `Main`, `North`, `South`
 
-## Common Use Cases
+**Important:** You can use simple, plain text values like "student" or "teacher" - no complex codes needed!
 
-### Department Assignment
-Assign department codes or names to all users in departmental OUs.
+## Common Use Cases for Schools
 
-```
-OU: /Engineering
-Attribute: EmployeeInfo.department
-Value: ENG
-```
-
-### Cost Center Tracking
-Apply cost center codes for financial reporting.
+### Assign User Roles
+Identify users by their role in the school.
 
 ```
-OU: /Finance/Accounts Payable
-Attribute: EmployeeInfo.costCenter
-Value: FIN-AP-001
+OU: /Faculty/Science
+Attribute: SchoolInfo.role
+Value: teacher
 ```
 
-### Employee Classification
-Tag users by employee type for policy application.
+### Set Grade Levels
+Tag students by their current grade level.
 
 ```
-OU: /Contractors
-Attribute: EmployeeInfo.employeeType
-Value: Contractor
+OU: /Students/Grade-9
+Attribute: SchoolInfo.gradeLevel
+Value: 9
 ```
 
-### Regional Identification
-Mark users by geographic region for compliance or localization.
+### Building Assignment
+Track which building or campus users belong to.
 
 ```
-OU: /Europe/Germany
-Attribute: EmployeeInfo.region
-Value: EU-DE
+OU: /Students/Elementary
+Attribute: SchoolInfo.building
+Value: Elementary Campus
 ```
 
-### Project Assignment
-Track project affiliations for cross-functional teams.
+### Department Classification
+Assign faculty to academic departments.
 
 ```
-OU: /Projects/Phoenix
-Attribute: ProjectInfo.assignment
-Value: PHX-2024
+OU: /Faculty/Mathematics
+Attribute: SchoolInfo.department
+Value: Math
+```
+
+### Student Type
+Differentiate between different student categories.
+
+```
+OU: /Students/Special-Programs
+Attribute: SchoolInfo.studentType
+Value: Gifted and Talented
 ```
 
 ## Permissions Required

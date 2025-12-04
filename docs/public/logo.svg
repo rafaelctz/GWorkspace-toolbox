@@ -1,0 +1,11 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="32" cy="32" r="30" fill="#4285F4"/>
+
+  <!-- Google Workspace inspired icon -->
+  <!-- Letter 'G' -->
+  <path d="M32 14C22.059 14 14 22.059 14 32C14 41.941 22.059 50 32 50C38.627 50 44.235 46.235 47 40.5H32V35H52.5C52.833 36.5 53 38 53 40C53 46.5 50 52 45 56C41 59 36 61 32 61C17.088 61 5 48.912 5 34C5 19.088 17.088 7 32 7C39 7 45 10 49.5 15L44.5 20C41.5 16.5 37 14 32 14Z" fill="white"/>
+
+  <!-- Toolbox handle -->
+  <rect x="26" y="28" width="12" height="3" rx="1.5" fill="#EA4335"/>
+</svg>

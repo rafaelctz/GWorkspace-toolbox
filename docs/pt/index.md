@@ -11,11 +11,17 @@ O GWorkspace Toolbox fornece uma interface moderna e fácil de usar para gerenci
 ### Extrator de Alias
 Exporta alias de usuário do seu domínio Google Workspace para formato CSV para auditoria, relatórios ou propósitos de migração.
 
+![Interface do Extrator de Alias](/screenshots/alias-extractor.png)
+
 ### Injetor de Atributos
 Injeta atributos personalizados em lote para Unidades Organizacionais (OUs), facilitando o gerenciamento de propriedades de usuário em todo o seu domínio.
 
+![Interface do Injetor de Atributos](/screenshots/attribute-injector.png)
+
 ### Sincronização de Grupos OU
 Sincroniza automaticamente usuários de Unidades Organizacionais para Grupos do Google com capacidades de sincronização inteligente e opções de agendamento.
+
+![Interface de Sincronização de Grupos OU](/screenshots/ou-group-sync.png)
 
 ## Por que GWorkspace Toolbox?
 

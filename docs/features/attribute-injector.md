@@ -2,6 +2,8 @@
 
 The Attribute Injector allows you to batch inject custom attributes to all users within a specified Organizational Unit, saving hours of manual work.
 
+![Attribute Injector Interface](/screenshots/attribute-injector.png)
+
 ## Overview
 
 Google Workspace supports custom user attributes through custom schemas. The Attribute Injector makes it easy to apply these attributes to all users in an OU at once, rather than manually updating each user individually.

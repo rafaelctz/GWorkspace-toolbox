@@ -2,6 +2,9 @@
 
 O Injetor de Atributos permite injetar atributos personalizados em lote para todos os usuários dentro de uma Unidade Organizacional especificada, economizando horas de trabalho manual.
 
+
+![Feature Screenshot](/screenshots/attribute-injector.png)
+
 ## Visão Geral
 
 O Google Workspace suporta atributos de usuário personalizados através de esquemas personalizados. O Injetor de Atributos facilita a aplicação desses atributos a todos os usuários em uma OU de uma vez, em vez de atualizar manualmente cada usuário individualmente.

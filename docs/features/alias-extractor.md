@@ -2,6 +2,8 @@
 
 The Alias Extractor feature allows you to export all email aliases from your Google Workspace domain to a CSV file with a single click.
 
+![Alias Extractor Interface](/screenshots/alias-extractor.png)
+
 ## Overview
 
 Email aliases are alternative email addresses that deliver to a user's primary mailbox. Managing and tracking these aliases across a large organization can be challenging. The Alias Extractor automates this process, giving you complete visibility of all aliases in your domain.

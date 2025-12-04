@@ -2,6 +2,9 @@
 
 O recurso Extrator de Alias permite exportar todos os alias de e-mail do seu domínio Google Workspace para um arquivo CSV com um único clique.
 
+
+![Feature Screenshot](/screenshots/alias-extractor.png)
+
 ## Visão Geral
 
 Alias de e-mail são endereços de e-mail alternativos que entregam para a caixa de entrada principal de um usuário. Gerenciar e rastrear esses alias em uma grande organização pode ser desafiador. O Extrator de Alias automatiza este processo, dando-lhe visibilidade completa de todos os alias no seu domínio.

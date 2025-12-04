@@ -2,6 +2,9 @@
 
 La característica de Sincronización de Grupos OU sincroniza automáticamente usuarios de una Unidad Organizativa a un Grupo de Google, con capacidades de sincronización inteligente y opciones de programación.
 
+
+![Feature Screenshot](/screenshots/ou-group-sync.png)
+
 ## Resumen
 
 Mantener los Grupos de Google sincronizados con Unidades Organizativas puede ser tedioso y propenso a errores cuando se hace manualmente. La Sincronización de Grupos OU automatiza este proceso, asegurando que los grupos siempre reflejen sus OUs correspondientes.

@@ -2,6 +2,8 @@
 
 The OU Group Sync feature automatically synchronizes users from an Organizational Unit to a Google Group, with smart sync capabilities and scheduling options.
 
+![OU Group Sync Interface](/screenshots/ou-group-sync.png)
+
 ## Overview
 
 Keeping Google Groups synchronized with Organizational Units can be time-consuming and error-prone when done manually. OU Group Sync automates this process, ensuring groups always reflect their corresponding OUs.

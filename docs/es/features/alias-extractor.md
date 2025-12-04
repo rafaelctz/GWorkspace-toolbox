@@ -22,15 +22,15 @@ El archivo CSV generado contiene las siguientes columnas:
 
 | Columna | Descripción | Ejemplo |
 |---------|-------------|---------|
-| Primary Email | Dirección de correo principal del usuario | juan.perez@empresa.com |
-| Alias | La dirección de correo del alias | j.perez@empresa.com |
+| Primary Email | Dirección de correo principal del usuario | juan.perez@escuela.edu |
+| Alias | La dirección de correo del alias | j.perez@escuela.edu |
 
 ### Ejemplo de Salida CSV
 ```csv
 Primary Email,Alias
-juan.perez@empresa.com,j.perez@empresa.com
-juan.perez@empresa.com,jperez@empresa.com
-maria.garcia@empresa.com,m.garcia@empresa.com
+juan.perez@escuela.edu,j.perez@escuela.edu
+juan.perez@escuela.edu,jperez@escuela.edu
+maria.garcia@escuela.edu,m.garcia@escuela.edu
 ```
 
 ## Casos de Uso

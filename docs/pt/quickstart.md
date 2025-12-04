@@ -41,7 +41,7 @@ O Injetor de Atributos permite adicionar atributos personalizados em lote a usu�
 ### Passos
 
 1. Clique em **Injetor de Atributos** na barra lateral
-2. Digite ou selecione o caminho da **Unidade Organizacional** alvo (ex., `/Vendas/Regional`)
+2. Digite ou selecione o caminho da **Unidade Organizacional** alvo (ex., `/Estudantes/Regional`)
 3. Digite o **Nome do Atributo** (campo de esquema personalizado)
 4. Digite o **Valor do Atributo** para atribuir
 5. Clique no botão **Injetar Atributos**
@@ -61,8 +61,8 @@ O recurso de Sincronização de Grupos OU adiciona automaticamente usuários de 
 ### Passos
 
 1. Clique em **Sincronização de Grupos OU** na barra lateral
-2. Digite o caminho da **Unidade Organizacional** (ex., `/Marketing`)
-3. Digite o **E-mail do Grupo Alvo** (ex., `equipe-marketing@empresa.com`)
+2. Digite o caminho da **Unidade Organizacional** (ex., `/Professores`)
+3. Digite o **E-mail do Grupo Alvo** (ex., `equipe-marketing@escola.edu`)
 4. Escolha o modo de sincronização:
    - **Sincronização Inteligente**: Apenas adiciona novos membros (preserva usuários adicionados manualmente)
    - **Sincronização Completa**: Espelha a OU exatamente (remove usuários que não estão na OU)

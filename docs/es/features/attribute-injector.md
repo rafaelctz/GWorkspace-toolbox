@@ -11,9 +11,9 @@ Google Workspace soporta atributos de usuario personalizados a través de esquem
 
 ## Cómo Funciona
 
-1. **Seleccionar OU Objetivo**: Ingresa la ruta de la unidad organizativa (ej., `/Ventas/Regional`)
+1. **Seleccionar OU Objetivo**: Ingresa la ruta de la unidad organizativa (ej., `/Estudiantes/Grado-10`)
 2. **Especificar Atributo**: Ingresa el nombre del atributo personalizado de tu esquema
-3. **Establecer Valor**: Ingresa el valor a asignar a todos los usuarios
+3. **Establecer Valor**: Ingresa el valor a asignar a todos los usuarios (ej., "estudiante", "profesor", "personal")
 4. **Inyectar**: Haz clic en "Inyectar Atributos" para aplicar cambios
 5. **Revisar Resultados**: Ve cuántos usuarios fueron actualizados exitosamente
 
@@ -25,37 +25,47 @@ Antes de usar el Inyector de Atributos, debes crear un esquema personalizado en 
 1. Ve a [Google Admin Console](https://admin.google.com)
 2. Navega a **Directory** > **Users** > **Manage custom attributes**
 3. Haz clic en **Add Custom Attribute**
-4. Crea tu esquema (ej., "InformacionEmpleado")
-5. Agrega campos (ej., "departamento", "centroCostos", "tipoEmpleado")
+4. Crea tu esquema (ej., "InfoEscolar")
+5. Agrega campos (ej., "rol", "nivelGrado", "edificio", "idEstudiante")
 
 ## Formato de Nombre de Atributo
 
-Los atributos deben especificarse en el formato: `NombreEsquema.NombreCampo`
+Los atributos se especifican en el formato: `NombreEsquema.NombreCampo`
 
-**Ejemplos:**
-- `InformacionEmpleado.departamento`
-- `InformacionEmpleado.centroCostos`
-- `InformacionEmpleado.tipoEmpleado`
-- `DatosPersonalizados.region`
+**Ejemplos Simples:**
+- `InfoEscolar.rol` con valores como: `estudiante`, `profesor`, `personal`, `admin`
+- `InfoEscolar.nivelGrado` con valores como: `K`, `1`, `2`, `12`, `Graduado`
+- `InfoEscolar.edificio` con valores como: `Principal`, `Norte`, `Sur`
 
-## Casos de Uso Comunes
+**Importante:** ¡Puedes usar valores de texto simple como "estudiante" o "profesor" - no se necesitan códigos complejos!
 
-### Asignación de Departamento
-Asignar códigos o nombres de departamento a todos los usuarios en OUs departamentales.
+## Casos de Uso Comunes para Escuelas
 
-```
-OU: /Ingenieria
-Atributo: InformacionEmpleado.departamento
-Valor: ING
-```
-
-### Seguimiento de Centro de Costos
-Aplicar códigos de centro de costos para informes financieros.
+### Asignar Roles de Usuario
+Identificar usuarios por su rol en la escuela.
 
 ```
-OU: /Finanzas/Cuentas por Pagar
-Atributo: InformacionEmpleado.centroCostos
-Valor: FIN-CP-001
+OU: /Profesores/Ciencias
+Atributo: InfoEscolar.rol
+Valor: profesor
+```
+
+### Establecer Niveles de Grado
+Etiquetar estudiantes por su nivel de grado actual.
+
+```
+OU: /Estudiantes/Grado-9
+Atributo: InfoEscolar.nivelGrado
+Valor: 9
+```
+
+### Asignación de Edificio
+Rastrear a qué edificio o campus pertenecen los usuarios.
+
+```
+OU: /Estudiantes/Primaria
+Atributo: InfoEscolar.edificio
+Valor: Campus Primaria
 ```
 
 ### Clasificación de Empleados
@@ -63,7 +73,7 @@ Etiquetar usuarios por tipo de empleado para aplicación de políticas.
 
 ```
 OU: /Contratistas
-Atributo: InformacionEmpleado.tipoEmpleado
+Atributo: InfoEscolar.tipoEmpleado
 Valor: Contratista
 ```
 

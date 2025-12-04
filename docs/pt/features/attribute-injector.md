@@ -11,9 +11,9 @@ O Google Workspace suporta atributos de usuário personalizados através de esqu
 
 ## Como Funciona
 
-1. **Selecionar OU Alvo**: Digite o caminho da unidade organizacional (ex., `/Vendas/Regional`)
+1. **Selecionar OU Alvo**: Digite o caminho da unidade organizacional (ex., `/Estudantes/Ano-10`)
 2. **Especificar Atributo**: Digite o nome do atributo personalizado do seu esquema
-3. **Definir Valor**: Digite o valor para atribuir a todos os usuários
+3. **Definir Valor**: Digite o valor para atribuir a todos os usuários (ex., "aluno", "professor", "funcionario")
 4. **Injetar**: Clique em "Injetar Atributos" para aplicar alterações
 5. **Revisar Resultados**: Veja quantos usuários foram atualizados com sucesso
 
@@ -25,37 +25,47 @@ Antes de usar o Injetor de Atributos, você deve criar um esquema personalizado 
 1. Vá para [Google Admin Console](https://admin.google.com)
 2. Navegue para **Directory** > **Users** > **Manage custom attributes**
 3. Clique em **Add Custom Attribute**
-4. Crie seu esquema (ex., "InformacaoFuncionario")
-5. Adicione campos (ex., "departamento", "centroCusto", "tipoFuncionario")
+4. Crie seu esquema (ex., "InfoEscolar")
+5. Adicione campos (ex., "funcao", "serie", "predio", "idAluno")
 
 ## Formato de Nome de Atributo
 
-Os atributos devem ser especificados no formato: `NomeEsquema.NomeCampo`
+Os atributos são especificados no formato: `NomeEsquema.NomeCampo`
 
-**Exemplos:**
-- `InformacaoFuncionario.departamento`
-- `InformacaoFuncionario.centroCusto`
-- `InformacaoFuncionario.tipoFuncionario`
-- `DadosPersonalizados.regiao`
+**Exemplos Simples:**
+- `InfoEscolar.funcao` com valores como: `aluno`, `professor`, `funcionario`, `admin`
+- `InfoEscolar.serie` com valores como: `1`, `2`, `9`, `Maternal`, `Graduado`
+- `InfoEscolar.predio` com valores como: `Principal`, `Norte`, `Sul`
 
-## Casos de Uso Comuns
+**Importante:** Você pode usar valores de texto simples como "aluno" ou "professor" - não são necessários códigos complexos!
 
-### Atribuição de Departamento
-Atribuir códigos ou nomes de departamento a todos os usuários em OUs departamentais.
+## Casos de Uso Comuns para Escolas
 
-```
-OU: /Engenharia
-Atributo: InformacaoFuncionario.departamento
-Valor: ENG
-```
-
-### Rastreamento de Centro de Custo
-Aplicar códigos de centro de custo para relatórios financeiros.
+### Atribuir Funções de Usuário
+Identificar usuários por sua função na escola.
 
 ```
-OU: /Financeiro/Contas a Pagar
-Atributo: InformacaoFuncionario.centroCusto
-Valor: FIN-CP-001
+OU: /Professores/Ciencias
+Atributo: InfoEscolar.funcao
+Valor: professor
+```
+
+### Definir Séries
+Marcar alunos pela série atual.
+
+```
+OU: /Estudantes/Ano-9
+Atributo: InfoEscolar.serie
+Valor: 9
+```
+
+### Atribuição de Prédio
+Rastrear a qual prédio ou campus os usuários pertencem.
+
+```
+OU: /Estudantes/Fundamental
+Atributo: InfoEscolar.predio
+Valor: Campus Fundamental
 ```
 
 ### Classificação de Funcionários
@@ -63,7 +73,7 @@ Marcar usuários por tipo de funcionário para aplicação de políticas.
 
 ```
 OU: /Contratados
-Atributo: InformacaoFuncionario.tipoFuncionario
+Atributo: InfoEscolar.tipoFuncionario
 Valor: Contratado
 ```
 

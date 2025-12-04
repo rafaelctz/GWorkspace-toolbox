@@ -61,8 +61,8 @@ La función de Sincronización de Grupos OU agrega automáticamente usuarios de 
 ### Pasos
 
 1. Haz clic en **Sincronización de Grupos OU** en la barra lateral
-2. Ingresa la ruta de la **Unidad Organizativa** (ej., `/Marketing`)
-3. Ingresa el **Correo del Grupo Objetivo** (ej., `equipo-marketing@empresa.com`)
+2. Ingresa la ruta de la **Unidad Organizativa** (ej., `/Facultad`)
+3. Ingresa el **Correo del Grupo Objetivo** (ej., `equipo-marketing@escuela.edu`)
 4. Elige el modo de sincronización:
    - **Sincronización Inteligente**: Solo agrega nuevos miembros (preserva usuarios agregados manualmente)
    - **Sincronización Completa**: Refleja la OU exactamente (elimina usuarios que no están en la OU)

@@ -11,8 +11,8 @@ Mantener los Grupos de Google sincronizados con Unidades Organizativas puede ser
 
 ## Cómo Funciona
 
-1. **Especificar OU**: Ingresa la ruta de la unidad organizativa (ej., `/Marketing`)
-2. **Seleccionar Grupo Objetivo**: Ingresa el correo del Grupo de Google (ej., `equipo-marketing@empresa.com`)
+1. **Especificar OU**: Ingresa la ruta de la unidad organizativa (ej., `/Facultad`)
+2. **Seleccionar Grupo Objetivo**: Ingresa el correo del Grupo de Google (ej., `equipo-marketing@escuela.edu`)
 3. **Elegir Modo de Sincronización**: Sincronización Inteligente o Sincronización Completa
 4. **Programación Opcional**: Habilita sincronización automática diaria
 5. **Sincronizar**: Haz clic en "Sincronizar Ahora" o deja que la programación lo maneje
@@ -80,7 +80,7 @@ Otorgar automáticamente acceso departamental a recursos:
 
 ```
 OU: /Ventas
-Grupo: departamento-ventas@empresa.com
+Grupo: departamento-ventas@escuela.edu
 Modo: Sincronización Inteligente
 Programación: Habilitada
 
@@ -96,7 +96,7 @@ Mantener listas de correo de equipo automáticamente:
 
 ```
 OU: /Ingenieria/Backend
-Grupo: equipo-backend@empresa.com
+Grupo: equipo-backend@escuela.edu
 Modo: Sincronización Completa
 Programación: Habilitada
 

@@ -56,36 +56,41 @@ The Attribute Injector lets you batch add custom attributes to users in specific
 
 ## Synchronizing OU to Groups
 
-The OU Group Sync feature automatically adds users from an Organizational Unit to a Google Group.
+The OU Group Sync feature automatically synchronizes users from Organizational Units to Google Groups with saved configurations.
 
 ### Steps
 
 1. Click on **OU Group Sync** in the sidebar
-2. Enter the **Organizational Unit** path (e.g., `/Students/Grade-10`)
-3. Enter the **Target Group Email** (e.g., `grade10-students@school.edu`)
-4. Choose sync mode:
-   - **Smart Sync**: Only adds new members (preserves manually added teachers/coaches)
-   - **Full Sync**: Mirrors OU exactly (removes users not in OU - use for pure class lists)
-5. Optionally enable **Schedule Sync** for automatic daily synchronization
-6. Click **Sync Now** to run immediately
+2. Click **+ New Configuration**
+3. Select one or more **Organizational Units** from the tree (e.g., `/Students/Grade-10`)
+4. Enter the **Target Group Email** (e.g., `grade10-students@school.edu`)
+5. Optionally provide a group name and description
+6. Click **Sync** to create the configuration and run the first sync
 
-### Smart Sync vs Full Sync
+### How Sync Works
 
-**Smart Sync** (Recommended):
-- Adds users from OU to group
-- Never removes anyone from group
-- Safe for groups with manually managed members
-- Best for most use cases
+**First Sync (Automatic - Safe Mode):**
+- Creates the group if it doesn't exist
+- Adds all users from selected OUs to the group
+- **Never removes existing group members**
+- Safe for groups that already have members
 
-**Full Sync**:
-- Group membership exactly matches OU
-- Removes users not in the OU
-- Use only if group should mirror OU exactly
-- Careful: will remove manually added members
+**Subsequent Syncs (Automatic - Mirror Mode):**
+- When you click "Resync" on a saved configuration
+- Adds users who joined the OU
+- **Removes users who left the OU**
+- Makes the group mirror the OU exactly
 
-### Scheduling
+⚠️ **Important**: The system automatically uses safe mode for the first sync, then switches to mirror mode for all subsequent syncs. You cannot manually choose the sync mode - it's determined by whether it's the first time syncing that configuration.
 
-Enable **Schedule Sync** to automatically run the synchronization daily at midnight. The schedule persists across application restarts.
+### Managing Configurations
+
+After creating a configuration, you can:
+- **Resync**: Update the group with current OU members
+- **Sync All**: Run all saved configurations at once
+- **Export**: Download configurations for backup
+- **Import**: Restore configurations from backup
+- **Delete**: Remove configurations you no longer need
 
 ## Language Selection
 
@@ -106,13 +111,13 @@ Your language preference is saved automatically.
 
 ### Testing
 - Test operations on small OUs first
-- Use Smart Sync mode unless you specifically need Full Sync
+- Review group membership before running subsequent syncs (they will remove members not in the OU)
 - Export and review CSV files before making bulk changes
 
 ### Monitoring
 - Check Docker logs for any errors: `docker-compose logs -f`
 - Monitor sync job status in the OU Group Sync interface
-- Review scheduled sync history regularly
+- Review last sync timestamps on saved configurations
 
 ## Next Steps
 

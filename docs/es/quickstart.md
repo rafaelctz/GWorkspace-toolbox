@@ -56,36 +56,41 @@ El Inyector de Atributos te permite agregar atributos personalizados en lote a u
 
 ## Sincronizando OU a Grupos
 
-La función de Sincronización de Grupos OU agrega automáticamente usuarios de una Unidad Organizativa a un Grupo de Google.
+La característica de Sincronización de Grupos OU sincroniza automáticamente usuarios de Unidades Organizativas a Grupos de Google con configuraciones guardadas.
 
 ### Pasos
 
 1. Haz clic en **Sincronización de Grupos OU** en la barra lateral
-2. Ingresa la ruta de la **Unidad Organizativa** (ej., `/Facultad`)
-3. Ingresa el **Correo del Grupo Objetivo** (ej., `equipo-marketing@escuela.edu`)
-4. Elige el modo de sincronización:
-   - **Sincronización Inteligente**: Solo agrega nuevos miembros (preserva usuarios agregados manualmente)
-   - **Sincronización Completa**: Refleja la OU exactamente (elimina usuarios que no están en la OU)
-5. Opcionalmente habilita **Programar Sincronización** para sincronización automática diaria
-6. Haz clic en **Sincronizar Ahora** para ejecutar inmediatamente
+2. Haz clic en **+ Nueva Configuración**
+3. Selecciona una o más **Unidades Organizativas** del árbol (ej., `/Estudiantes/Grado-10`)
+4. Ingresa el **Correo del Grupo Objetivo** (ej., `estudiantes-grado10@escuela.edu`)
+5. Opcionalmente proporciona un nombre y descripción del grupo
+6. Haz clic en **Sincronizar** para crear la configuración y ejecutar la primera sincronización
 
-### Sincronización Inteligente vs Sincronización Completa
+### Cómo Funciona la Sincronización
 
-**Sincronización Inteligente** (Recomendada):
-- Agrega usuarios de la OU al grupo
-- Nunca elimina a nadie del grupo
-- Seguro para grupos con miembros gestionados manualmente
-- Mejor para la mayoría de casos de uso
+**Primera Sincronización (Automática - Modo Seguro):**
+- Crea el grupo si no existe
+- Agrega todos los usuarios de las OUs seleccionadas al grupo
+- **Nunca elimina miembros existentes del grupo**
+- Seguro para grupos que ya tienen miembros
 
-**Sincronización Completa**:
-- La membresía del grupo coincide exactamente con la OU
-- Elimina usuarios que no están en la OU
-- Usar solo si el grupo debe reflejar la OU exactamente
-- Cuidado: eliminará miembros agregados manualmente
+**Sincronizaciones Posteriores (Automáticas - Modo Espejo):**
+- Cuando haces clic en "Resincronizar" en una configuración guardada
+- Agrega usuarios que se unieron a la OU
+- **Elimina usuarios que salieron de la OU**
+- Hace que el grupo refleje la OU exactamente
 
-### Programación
+⚠️ **Importante**: El sistema automáticamente usa modo seguro para la primera sincronización, luego cambia a modo espejo para todas las sincronizaciones posteriores. No puedes elegir manualmente el modo de sincronización - se determina por si es la primera vez sincronizando esa configuración.
 
-Habilita **Programar Sincronización** para ejecutar automáticamente la sincronización diariamente a medianoche. La programación persiste a través de reinicios de la aplicación.
+### Gestión de Configuraciones
+
+Después de crear una configuración, puedes:
+- **Resincronizar**: Actualiza el grupo con los miembros actuales de la OU
+- **Sincronizar Todo**: Ejecuta todas las configuraciones guardadas a la vez
+- **Exportar**: Descarga configuraciones para respaldo
+- **Importar**: Restaura configuraciones desde respaldo
+- **Eliminar**: Elimina configuraciones que ya no necesites
 
 ## Selección de Idioma
 
@@ -106,13 +111,13 @@ Tu preferencia de idioma se guarda automáticamente.
 
 ### Pruebas
 - Prueba operaciones en OUs pequeñas primero
-- Usa el modo de Sincronización Inteligente a menos que específicamente necesites Sincronización Completa
+- Revisa la membresía del grupo antes de ejecutar sincronizaciones posteriores (eliminarán miembros que no estén en la OU)
 - Exporta y revisa archivos CSV antes de hacer cambios masivos
 
 ### Monitoreo
 - Verifica los logs de Docker para cualquier error: `docker-compose logs -f`
 - Monitorea el estado de trabajos de sincronización en la interfaz de Sincronización de Grupos OU
-- Revisa regularmente el historial de sincronización programada
+- Revisa regularmente las marcas de tiempo de última sincronización en las configuraciones guardadas
 
 ## Próximos Pasos
 

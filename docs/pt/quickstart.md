@@ -56,36 +56,41 @@ O Injetor de Atributos permite adicionar atributos personalizados em lote a usu�
 
 ## Sincronizando OU para Grupos
 
-O recurso de Sincronização de Grupos OU adiciona automaticamente usuários de uma Unidade Organizacional a um Grupo do Google.
+O recurso de Sincronização de Grupos OU sincroniza automaticamente usuários de Unidades Organizacionais para Grupos do Google com configurações salvas.
 
 ### Passos
 
 1. Clique em **Sincronização de Grupos OU** na barra lateral
-2. Digite o caminho da **Unidade Organizacional** (ex., `/Professores`)
-3. Digite o **E-mail do Grupo Alvo** (ex., `equipe-marketing@escola.edu`)
-4. Escolha o modo de sincronização:
-   - **Sincronização Inteligente**: Apenas adiciona novos membros (preserva usuários adicionados manualmente)
-   - **Sincronização Completa**: Espelha a OU exatamente (remove usuários que não estão na OU)
-5. Opcionalmente habilite **Agendar Sincronização** para sincronização automática diária
-6. Clique em **Sincronizar Agora** para executar imediatamente
+2. Clique em **+ Nova Configuração**
+3. Selecione uma ou mais **Unidades Organizacionais** da árvore (ex., `/Alunos/Ano-10`)
+4. Digite o **E-mail do Grupo Alvo** (ex., `alunos-ano10@escola.edu`)
+5. Opcionalmente forneça um nome e descrição do grupo
+6. Clique em **Sincronizar** para criar a configuração e executar a primeira sincronização
 
-### Sincronização Inteligente vs Sincronização Completa
+### Como Funciona a Sincronização
 
-**Sincronização Inteligente** (Recomendada):
-- Adiciona usuários da OU ao grupo
-- Nunca remove ninguém do grupo
-- Seguro para grupos com membros gerenciados manualmente
-- Melhor para a maioria dos casos de uso
+**Primeira Sincronização (Automática - Modo Seguro):**
+- Cria o grupo se não existir
+- Adiciona todos os usuários das OUs selecionadas ao grupo
+- **Nunca remove membros existentes do grupo**
+- Seguro para grupos que já têm membros
 
-**Sincronização Completa**:
-- A associação do grupo corresponde exatamente à OU
-- Remove usuários que não estão na OU
-- Use apenas se o grupo deve espelhar a OU exatamente
-- Cuidado: removerá membros adicionados manualmente
+**Sincronizações Subsequentes (Automáticas - Modo Espelho):**
+- Quando você clica em "Ressincronizar" em uma configuração salva
+- Adiciona usuários que se juntaram à OU
+- **Remove usuários que saíram da OU**
+- Faz o grupo refletir a OU exatamente
 
-### Agendamento
+⚠️ **Importante**: O sistema automaticamente usa modo seguro para a primeira sincronização, depois muda para modo espelho para todas as sincronizações subsequentes. Você não pode escolher manualmente o modo de sincronização - é determinado por ser a primeira vez sincronizando aquela configuração.
 
-Habilite **Agendar Sincronização** para executar automaticamente a sincronização diariamente à meia-noite. O agendamento persiste através de reinicializações da aplicação.
+### Gerenciamento de Configurações
+
+Após criar uma configuração, você pode:
+- **Ressincronizar**: Atualiza o grupo com os membros atuais da OU
+- **Sincronizar Todas**: Executa todas as configurações salvas de uma vez
+- **Exportar**: Baixa configurações para backup
+- **Importar**: Restaura configurações do backup
+- **Excluir**: Remove configurações que você não precisa mais
 
 ## Seleção de Idioma
 
@@ -106,13 +111,13 @@ Sua preferência de idioma é salva automaticamente.
 
 ### Testes
 - Teste operações em OUs pequenas primeiro
-- Use o modo de Sincronização Inteligente a menos que você especificamente precise da Sincronização Completa
+- Revise a associação do grupo antes de executar sincronizações subsequentes (elas removerão membros que não estão na OU)
 - Exporte e revise arquivos CSV antes de fazer alterações em massa
 
 ### Monitoramento
 - Verifique os logs do Docker para quaisquer erros: `docker-compose logs -f`
 - Monitore o status de trabalhos de sincronização na interface de Sincronização de Grupos OU
-- Revise regularmente o histórico de sincronização agendada
+- Revise regularmente as marcas de tempo da última sincronização nas configurações salvas
 
 ## Próximos Passos
 

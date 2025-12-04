@@ -1,135 +1,275 @@
 # Sincronização de Grupos OU
 
-O recurso de Sincronização de Grupos OU sincroniza automaticamente usuários de uma Unidade Organizacional para um Grupo do Google, com capacidades de sincronização inteligente e opções de agendamento.
+O recurso de Sincronização de Grupos OU sincroniza automaticamente usuários de Unidades Organizacionais para Grupos do Google, com configurações salvas que podem ser reutilizadas e gerenciadas.
 
-
-![Feature Screenshot](/screenshots/ou-group-sync.png)
+![Interface de Sincronização de Grupos OU](/screenshots/ou-group-sync.png)
 
 ## Visão Geral
 
-Manter os Grupos do Google sincronizados com Unidades Organizacionais pode ser demorado e propenso a erros quando feito manualmente. A Sincronização de Grupos OU automatiza este processo, garantindo que os grupos sempre reflitam suas OUs correspondentes.
+Manter os Grupos do Google sincronizados com Unidades Organizacionais pode ser demorado e propenso a erros quando feito manualmente. A Sincronização de Grupos OU automatiza este processo mantendo configurações de sincronização salvas que você pode executar quando necessário.
 
 ## Como Funciona
 
-1. **Especificar OU**: Digite o caminho da unidade organizacional (ex., `/Professores`)
-2. **Selecionar Grupo Alvo**: Digite o e-mail do Grupo do Google (ex., `equipe-marketing@escola.edu`)
-3. **Escolher Modo de Sincronização**: Sincronização Inteligente ou Sincronização Completa
-4. **Agendamento Opcional**: Habilite sincronização automática diária
-5. **Sincronizar**: Clique em "Sincronizar Agora" ou deixe o agendamento lidar com isso
+1. **Criar uma Configuração de Sincronização**: Selecione uma ou mais OUs e especifique o Grupo do Google de destino
+2. **Primeira Sincronização**: A sincronização inicial apenas adiciona usuários ao grupo (modo seguro - nunca remove ninguém)
+3. **Sincronizações Subsequentes**: Sincronizações posteriores refletem a OU exatamente (adiciona novos usuários E remove usuários que não estão mais na OU)
+4. **Reutilizar**: Salve configurações e sincronize novamente a qualquer momento com um único clique
 
-## Modos de Sincronização
+## Entendendo o Comportamento de Sincronização
 
-### Sincronização Inteligente (Recomendada)
+### Primeira Sincronização (Automática - Modo Seguro)
+
+Quando você cria uma nova configuração de sincronização e a executa pela primeira vez:
 
 **O que faz:**
-- Adiciona todos os usuários da OU ao grupo
-- **Nunca remove** membros do grupo
-- Preserva membros adicionados manualmente
-
-**Melhor para:**
-- Grupos com uma mistura de membros baseados em OU e gerenciados manualmente
-- Garantir que ninguém seja removido acidentalmente
-- Adição unidirecional de membros
-- Casos de uso mais comuns
+- Cria o grupo se não existir
+- Adiciona todos os usuários das OUs selecionadas ao grupo
+- **Nunca remove membros existentes do grupo**
+- Seguro para grupos que já têm membros
 
 **Exemplo:**
 ```
-Membros OU: alice@, bob@, carlos@
-Grupo Antes: alice@, david@ (adicionado manualmente)
-Grupo Depois: alice@, bob@, carlos@, david@
+Membros OU: aluno1@, aluno2@, aluno3@
+Grupo Antes: aluno1@, professor@ (adicionado manualmente)
+Grupo Depois: aluno1@, aluno2@, aluno3@, professor@
+Resultado: 2 novos alunos adicionados, professor@ preservado
 ```
 
-### Sincronização Completa
+### Sincronizações Subsequentes (Automáticas - Modo Espelho)
+
+Quando você clica em "Ressincronizar" em uma configuração existente:
 
 **O que faz:**
-- Faz a associação do grupo corresponder exatamente à OU
-- Adiciona usuários da OU
-- **Remove usuários NÃO na OU**
-
-**Melhor para:**
-- Grupos que devem espelhar uma OU exatamente
-- Grupos de permissões automatizados
-- Quando você quer mapeamento estrito OU-para-grupo
+- Compara a associação atual do grupo com a associação da OU
+- Adiciona usuários que se juntaram à OU
+- **Remove usuários que saíram da OU**
+- Faz o grupo refletir a OU exatamente
 
 **Exemplo:**
 ```
-Membros OU: alice@, bob@, carlos@
-Grupo Antes: alice@, david@ (adicionado manualmente)
-Grupo Depois: alice@, bob@, carlos@
-Resultado: david@ foi removido
+Membros OU: aluno1@, aluno2@, aluno4@ (aluno3@ transferido, aluno4@ entrou)
+Grupo Antes: aluno1@, aluno2@, aluno3@, professor@
+Grupo Depois: aluno1@, aluno2@, aluno4@
+Resultado: aluno4@ adicionado, aluno3@ e professor@ removidos
 ```
 
-⚠️ **Aviso**: A Sincronização Completa removerá membros adicionados manualmente. Use apenas quando quiser que o grupo corresponda exatamente à OU.
+⚠️ **Importante**: Após a primeira sincronização, as sincronizações subsequentes removerão membros que não estão na OU. O sistema determina automaticamente qual modo de sincronização usar com base em se é a primeira vez sincronizando aquela configuração.
 
-## Agendamento
+## Configurações Salvas
 
-### Habilitar Sincronização Agendada
+### Criando uma Configuração
 
-Ative "Agendar Sincronização" para habilitar sincronização automática diária:
+1. Clique em "+ Nova Configuração"
+2. Selecione uma ou mais OUs da árvore
+3. Digite o email do grupo de destino (ex., `alunos-ano10@escola.edu`)
+4. Opcionalmente forneça um nome e descrição do grupo
+5. Clique em "Sincronizar" para criar a configuração e executar a primeira sincronização
 
-- Executa diariamente à meia-noite (hora local do servidor)
-- Usa o modo de sincronização que você especificou
-- Persiste através de reinicializações da aplicação
-- Armazenado em banco de dados SQLite
+### Gerenciando Configurações
 
-## Casos de Uso Comuns
+Uma vez salvas, você pode:
 
-### Grupos de Acesso Departamental
+- **Ressincronizar**: Clique no botão de sincronização para atualizar o grupo com os membros atuais da OU
+- **Exportar**: Baixe uma configuração individual como JSON
+- **Excluir**: Remova uma configuração que você não precisa mais
+- **Sincronizar Todas**: Execute todas as configurações salvas de uma vez
 
-Conceder automaticamente acesso departamental a recursos:
+A interface mostra:
+- Endereço de email do grupo
+- Número de OUs sendo sincronizadas
+- Marca de tempo da última sincronização
+- Botões de ação rápida para cada configuração
+
+### Exportar e Importar
+
+**Exportar Todas as Configurações:**
+- Clique em "Exportar Todas" para baixar todas as configurações salvas como arquivo JSON
+- Útil para backup ou migração para outra instância
+
+**Importar Configurações:**
+- Clique em "Importar" e selecione um arquivo JSON previamente exportado
+- As configurações são adicionadas (as existentes são puladas)
+- Útil para restaurar backups ou compartilhar configurações
+
+## Casos de Uso Comuns para Escolas
+
+### Listas de Email de Turmas
+
+Manter automaticamente grupos de email de turmas:
 
 ```
-OU: /Estudantes
-Grupo: departamento-vendas@escola.edu
-Modo: Sincronização Inteligente
-Agendamento: Habilitado
+OUs: /Alunos/Ano-10
+Grupo: alunos-ano10@escola.edu
 
-Resultado: Todos os membros da equipe de vendas obtêm automaticamente acesso a:
-- Drives compartilhados
-- Sites internos
-- Recursos departamentais
+Resultado: Todos os alunos do 10º ano automaticamente na lista de email
+Primeira sincronização: Adiciona todos os alunos atuais
+Sincronizações posteriores: Atualiza quando alunos transferem
 ```
 
-### Listas de E-mail de Equipe
+### Grupos de Departamentos de Professores
 
-Manter listas de e-mail de equipe automaticamente:
+Manter grupos de departamentos de professores atualizados:
 
 ```
-OU: /Professores/Ciencias/Backend
-Grupo: equipe-backend@escola.edu
-Modo: Sincronização Completa
-Agendamento: Habilitado
+OUs: /Professores/Ciencias
+Grupo: professores-ciencias@escola.edu
 
-Resultado: O grupo sempre reflete a lista atual da equipe backend
+Resultado: O grupo sempre reflete o quadro atual do departamento de ciências
+Primeira sincronização: Adiciona todos os professores de ciências
+Sincronizações posteriores: Remove professores transferidos, adiciona novas contratações
+```
+
+### Acesso por Nível de Ano
+
+Conceder acesso apropriado aos recursos por ano:
+
+```
+OUs: /Alunos/Ano-12
+Grupo: alunos-ultimo-ano@escola.edu
+
+Resultado: Alunos do último ano obtêm acesso a:
+- Cursos do Classroom apenas para o último ano
+- Recursos de preparação universitária
+- Materiais de planejamento de formatura
+```
+
+### Grupos Multi-OU
+
+Combinar múltiplas OUs em um grupo:
+
+```
+OUs: /Alunos/Ano-11, /Alunos/Ano-12
+Grupo: alunos-avancados@escola.edu
+
+Resultado: Todos os alunos júniores e seniores em um grupo para:
+- Acesso a cursos avançados
+- Programas de liderança estudantil
+- Workshops de preparação universitária
+```
+
+### Grupos de Edifícios do Campus
+
+Sincronizar usuários por campus ou edifício físico:
+
+```
+OUs: /Professores/Primaria, /Funcionarios/Primaria
+Grupo: campus-primaria@escola.edu
+
+Resultado: Todo o pessoal do campus primário no grupo para:
+- Anúncios do edifício
+- Notificações de emergência
+- Acesso a recursos do campus
 ```
 
 ## Melhores Práticas
 
-### Escolher o Modo de Sincronização Correto
+### Antes da Primeira Sincronização
 
-| Cenário | Modo Recomendado |
-|---------|------------------|
-| O grupo tem apenas membros de OU | Sincronização Completa |
-| O grupo também tem membros externos | Sincronização Inteligente |
-| Controle de acesso estrito necessário | Sincronização Completa |
-| Adicionando membros de OU a grupo existente | Sincronização Inteligente |
-| Não tem certeza qual usar | Sincronização Inteligente (mais segura) |
+Se o grupo já tem membros que você quer manter:
+1. Verifique quem está atualmente no grupo
+2. Certifique-se de que esses usuários também estão nas OUs sendo sincronizadas
+3. Ou esteja ciente de que eles serão removidos em sincronizações subsequentes
+
+### Convenções de Nomenclatura de Grupos
+
+Use nomenclatura clara para indicar grupos sincronizados:
+- `alunos-ano10-auto@escola.edu` (sincronizado automaticamente)
+- `alunos-ano10-manual@escola.edu` (gerenciado manualmente)
+- Isso ajuda a prevenir confusão sobre quais grupos são gerenciados por sincronização
 
 ### Documentação
 
 Documente suas configurações de sincronização:
 - Quais OUs sincronizam com quais grupos
-- Modo de sincronização usado para cada um
 - Propósito de cada grupo sincronizado
-- Contagens de associação esperadas
+- Contagens de membros esperadas
+- Quem pode acionar ressincronizações
 
-### Testes
+### Ressincronização Regular
 
-Antes de habilitar Sincronização Completa:
-1. Verifique a associação atual do grupo
-2. Identifique quaisquer membros adicionados manualmente
-3. Decida se eles devem permanecer
-4. Considere Sincronização Inteligente se não tiver certeza
+Programe ressincronizações regulares (você deve acioná-las manualmente):
+- Semanal: Para grupos dinâmicos (anos de alunos, novas contratações)
+- Mensal: Para grupos estáveis (departamentos, edifícios)
+- Após mudanças importantes: Promoções de nível de ano, reorganizações
+
+## Permissões Necessárias
+
+A Sincronização de Grupos OU requer estes escopos da API do Google Workspace:
+
+- `https://www.googleapis.com/auth/admin.directory.user.readonly` (ler usuários de OUs)
+- `https://www.googleapis.com/auth/admin.directory.group` (gerenciar grupos e associação)
+
+## Requisitos do Grupo
+
+### Criação do Grupo
+
+A ferramenta criará o grupo se não existir, usando:
+- O endereço de email que você especificar
+- O nome do grupo que você fornecer (ou derivado do email)
+- A descrição que você fornecer (opcional)
+
+### Formato do Email do Grupo
+
+Deve ser um email de Grupo do Google válido:
+- `alunos-ano10@escola.edu` ✓
+- `professores.ciencias@escola.edu` ✓
+- `clube-robotica@escola.edu` ✓
+- `email-invalido` ✗
+
+### Tipos de Grupos
+
+Funciona com:
+- Grupos do Google regulares
+- Grupos de segurança
+- Listas de email
+- Grupos de discussão
+
+## Limitações
+
+### Escopo da OU
+
+A sincronização opera apenas na OU especificada. NÃO inclui automaticamente:
+- Sub-OUs (unidades organizacionais aninhadas)
+- OUs pai
+
+**Exemplo:**
+```
+/Alunos                 ← Selecionado: sincroniza apenas membros diretos
+├── /Ano-9             ← NÃO incluído
+├── /Ano-10            ← NÃO incluído
+└── /Ano-11            ← NÃO incluído
+```
+
+**Solução**: Selecione múltiplas OUs ao criar a configuração.
+
+### Propriedade do Grupo
+
+O usuário autenticado deve ter permissão para modificar o grupo de destino:
+- Proprietário do grupo
+- Administrador do domínio
+- Administrador delegado com direitos de gerenciamento de grupo
+
+### Comportamento de Sincronização Subsequente
+
+Após a primeira sincronização, **TODAS as sincronizações subsequentes removerão membros que não estão nas OUs**. Isso é automático e não pode ser desabilitado. Se você precisar preservar membros adicionados manualmente, adicione-os a uma das OUs sincronizadas.
+
+### Grupos Aninhados
+
+A sincronização adiciona usuários diretamente aos grupos, não como grupos aninhados.
+
+## Desempenho
+
+Tempos de sincronização típicos:
+
+- **OUs Pequenas** (< 50 usuários): 5-15 segundos
+- **OUs Médias** (50-500 usuários): 15-60 segundos
+- **OUs Grandes** (500+ usuários): 1-5 minutos
+
+Fatores que afetam a velocidade:
+- Número de usuários nas OUs
+- Tamanho atual do grupo
+- Tempos de resposta da API
+- Latência de rede
 
 ## Solução de Problemas
 
@@ -138,8 +278,8 @@ Antes de habilitar Sincronização Completa:
 O grupo especificado não existe ou você não tem acesso.
 
 **Solução:**
-1. Verifique se o endereço de e-mail do grupo está correto
-2. Verifique se o grupo existe no Admin Console
+1. Verifique se o endereço de email do grupo está correto
+2. Deixe a ferramenta criá-lo (se for um grupo novo)
 3. Certifique-se de ter permissão para gerenciar o grupo
 
 ### Erro "OU não encontrada"
@@ -148,15 +288,97 @@ O caminho da unidade organizacional está incorreto.
 
 **Solução:**
 1. Verifique se o caminho da OU começa com `/`
-2. Verifique o caminho exato da OU no Admin Console
-3. O caminho é sensível a maiúsculas
+2. Verifique o caminho exato da OU no Console de Administração
+3. O caminho diferencia maiúsculas de minúsculas
+4. Certifique-se de que não há espaços no final
 
-### O Agendamento Não Está Sendo Executado
+### Nenhum Membro Adicionado
+
+Causas comuns:
+- A OU está vazia (sem usuários)
+- Todos os usuários já estão no grupo
 
 **Solução:**
-1. Verifique se o agendamento está habilitado (o botão deve estar ativado)
-2. Verifique se o contêiner Docker está executando continuamente
-3. Verifique os logs: `docker-compose logs -f`
+1. Verifique se a OU tem usuários no Console de Administração
+2. Revise os resultados de sincronização na fila de trabalhos
+3. Verifique os logs da aplicação para erros
+
+### Membros Removidos Inesperadamente
+
+Isso acontece em sincronizações subsequentes (após a primeira) porque o sistema reflete a OU exatamente.
+
+**Solução:**
+1. Adicione esses usuários a uma das OUs sincronizadas
+2. Ou aceite que eles serão removidos e adicione-os manualmente novamente quando necessário
+3. Ou não execute sincronizações subsequentes se quiser preservar o grupo como está
+
+### A Configuração de Sincronização Já Existe
+
+Você está tentando criar uma configuração para um grupo que já está configurado.
+
+**Solução:**
+1. Use o botão "Ressincronizar" na configuração existente
+2. Ou exclua a configuração antiga primeiro
+
+## Considerações de Segurança
+
+### Registro de Auditoria
+
+Todas as mudanças de associação de grupo são registradas:
+- Ver em Console de Administração > Relatórios > Auditoria
+- Filtrar por eventos de "Configurações do Grupo"
+- Rastrear adições/remoções
+- Revisar quem acionou sincronizações
+
+### Mudanças Automatizadas
+
+Como as sincronizações subsequentes removem automaticamente membros:
+- Documente todas as configurações de sincronização
+- Monitore a associação do grupo regularmente
+- Revise os resultados de sincronização após cada execução
+- Tenha um processo para lidar com preocupações de remoção
+
+### Controle de Acesso
+
+- Limite quem pode acessar o GWorkspace Toolbox
+- Monitore quem cria e executa configurações de sincronização
+- Revisões de acesso regulares
+- Use logs de auditoria para rastrear mudanças
+
+## Uso Avançado
+
+### Múltiplas OUs para Um Grupo
+
+Selecione múltiplas OUs ao criar uma configuração:
+
+```
+OUs: /Professores/Primaria, /Professores/Media, /Professores/Secundaria
+Grupo: todos-professores@escola.edu
+
+Resultado: Todos os membros do corpo docente em um grupo
+```
+
+### Combinando com Aninhamento de Grupos do Google
+
+Use o Console de Administração para aninhar grupos sincronizados:
+
+```
+Criar grupos sincronizados separados:
+- alunos-primeiro-ano@escola.edu (sincronizado de /Alunos/Ano-9)
+- alunos-segundo-ano@escola.edu (sincronizado de /Alunos/Ano-10)
+
+Então aninhá-los no Console de Administração:
+- todos-alunos@escola.edu
+  ├── alunos-primeiro-ano@ (aninhado)
+  └── alunos-segundo-ano@ (aninhado)
+```
+
+### Backup e Restauração
+
+Exporte regularmente suas configurações:
+1. Clique em "Exportar Todas" para baixar JSON
+2. Armazene o arquivo com segurança
+3. Importe quando necessário para restaurar configurações
 
 ## Próximos Passos
 

@@ -2,10 +2,8 @@ version: '3.8'
 
 services:
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: dea-toolbox-backend
+    image: ghcr.io/rafaelctz/gworkspace-toolbox-backend:latest
+    container_name: gworkspace-toolbox-backend
     ports:
       - "8000:8000"
     volumes:
@@ -18,23 +16,38 @@ services:
       - CORS_ORIGINS=http://localhost:3000,http://localhost:80
     restart: unless-stopped
     networks:
-      - dea-network
+      - gworkspace-network
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: dea-toolbox-frontend
+    image: ghcr.io/rafaelctz/gworkspace-toolbox-frontend:latest
+    container_name: gworkspace-toolbox-frontend
     ports:
       - "3000:80"
     depends_on:
       - backend
     restart: unless-stopped
     networks:
-      - dea-network
+      - gworkspace-network
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: gworkspace-toolbox-watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=86400
+      - WATCHTOWER_LABEL_ENABLE=true
+    restart: unless-stopped
+    networks:
+      - gworkspace-network
 
 networks:
-  dea-network:
+  gworkspace-network:
     driver: bridge
 
 volumes:

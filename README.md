@@ -53,15 +53,34 @@ npm run dev
 5. Download the credentials JSON file
 6. Upload it through the application interface
 
-### Docker Deployment
+### Docker Deployment (Recommended)
+
+Docker deployment includes **automatic updates** via Watchtower - you'll always have the latest version!
 
 ```bash
-# Build and run with docker-compose
+# Pull and run pre-built images
 docker-compose up -d
 
 # Access the application
 # Frontend: http://localhost:3000
 # Backend API: http://localhost:8000
+```
+
+**What's included:**
+- ✅ Pre-built, tested images from GitHub Container Registry
+- ✅ Automatic updates (checks daily for new versions)
+- ✅ Auto-cleanup of old images
+- ✅ No manual updates needed!
+
+**Manual update (if needed):**
+```bash
+docker-compose pull
+docker-compose up -d
+```
+
+**For local development (build from source):**
+```bash
+docker-compose -f docker-compose.dev.yml up
 ```
 
 ## Architecture

@@ -63,12 +63,12 @@ cd ..
 
 echo "🚀 Starting Backend on http://localhost:8000..."
 cd backend
-source venv/bin/activate
-python main.py &
+./venv/bin/python main.py &
 BACKEND_PID=$!
+cd ..
 
 echo "🚀 Starting Frontend on http://localhost:3000..."
-cd ../frontend
+cd frontend
 npm run dev &
 FRONTEND_PID=$!
 

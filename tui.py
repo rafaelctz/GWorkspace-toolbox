@@ -262,12 +262,9 @@ class AuthenticationScreen(Screen):
                 files = {"file": (path.name, f, "application/json")}
                 result = await self.app.api_client.post("/api/auth/upload-credentials", files=files)
 
-            if result.get("success"):
-                # Set auth token if provided
-                if "token" in result:
-                    self.app.api_client.set_auth_token(result["token"])
-
-                status.update("✅ Authentication successful!")
+            # Backend returns message and credential_type on success (no "success" field)
+            if "message" in result and "credential_type" in result:
+                status.update(f"✅ {result['message']}")
                 await asyncio.sleep(1)
                 self.app.push_screen(MainMenuScreen())
             else:
@@ -307,12 +304,9 @@ class AuthenticationScreen(Screen):
                 files = {"file": (path.name, f, "application/json")}
                 result = await self.app.api_client.post("/api/auth/upload-credentials", files=files)
 
-            if result.get("success"):
-                # Set auth token if provided
-                if "token" in result:
-                    self.app.api_client.set_auth_token(result["token"])
-
-                status.update("✅ Service account authentication successful!")
+            # Backend returns message and credential_type on success (no "success" field)
+            if "message" in result and "credential_type" in result:
+                status.update(f"✅ {result['message']}")
                 await asyncio.sleep(1)
                 self.app.push_screen(MainMenuScreen())
             else:

@@ -218,12 +218,15 @@ class AuthenticationScreen(Screen):
                     yield Button("Use Default Path", id="use-default-btn", variant="default")
 
             with Vertical(classes="section"):
-                yield Label("🔑 Or use Service Account:")
+                yield Label("🔑 Or use Service Account JSON:")
+                yield Label("Service account JSON file with private_key", classes="subtitle")
                 yield Input(
-                    placeholder="Service account email...",
-                    id="service-account"
+                    placeholder="Path to service-account.json file...",
+                    id="service-account-path"
                 )
-                yield Button("Authenticate", id="auth-service-btn", variant="primary")
+                with Horizontal():
+                    yield Button("Upload Service Account", id="auth-service-btn", variant="primary")
+                    yield Button("Use Default SA Path", id="use-default-sa-btn", variant="default")
 
             yield Label("", id="auth-status")
             yield Button("Skip (for testing)", id="skip-btn", variant="default")
@@ -265,6 +268,51 @@ class AuthenticationScreen(Screen):
                     self.app.api_client.set_auth_token(result["token"])
 
                 status.update("✅ Authentication successful!")
+                await asyncio.sleep(1)
+                self.app.push_screen(MainMenuScreen())
+            else:
+                status.update(f"❌ {result.get('message', 'Authentication failed')}")
+
+        except Exception as e:
+            status.update(f"❌ Error: {str(e)}")
+
+    @on(Button.Pressed, "#use-default-sa-btn")
+    def use_default_sa_path(self):
+        """Fill input with default service account path"""
+        path_input = self.query_one("#service-account-path", Input)
+        path_input.value = "backend/service-account.json"
+        self.notify("Default SA path filled! Press 'Upload Service Account' to continue.")
+
+    @on(Button.Pressed, "#auth-service-btn")
+    async def upload_service_account(self):
+        """Upload service account JSON file"""
+        import os
+        status = self.query_one("#auth-status", Label)
+        path_input = self.query_one("#service-account-path", Input)
+
+        # Expand ~ to home directory
+        path_str = os.path.expanduser(path_input.value.strip())
+        path = Path(path_str)
+
+        if not path.exists():
+            # Show helpful error with full path attempted
+            abs_path = path.resolve()
+            status.update(f"❌ File not found: {abs_path}")
+            return
+
+        try:
+            status.update("⏳ Uploading service account...")
+
+            with open(path, "rb") as f:
+                files = {"file": (path.name, f, "application/json")}
+                result = await self.app.api_client.post("/api/auth/service-account", files=files)
+
+            if result.get("success"):
+                # Set auth token if provided
+                if "token" in result:
+                    self.app.api_client.set_auth_token(result["token"])
+
+                status.update("✅ Service account authentication successful!")
                 await asyncio.sleep(1)
                 self.app.push_screen(MainMenuScreen())
             else:

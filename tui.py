@@ -260,7 +260,7 @@ class AuthenticationScreen(Screen):
 
             with open(path, "rb") as f:
                 files = {"file": (path.name, f, "application/json")}
-                result = await self.app.api_client.post("/api/auth/upload", files=files)
+                result = await self.app.api_client.post("/api/auth/upload-credentials", files=files)
 
             if result.get("success"):
                 # Set auth token if provided
@@ -305,7 +305,7 @@ class AuthenticationScreen(Screen):
 
             with open(path, "rb") as f:
                 files = {"file": (path.name, f, "application/json")}
-                result = await self.app.api_client.post("/api/auth/service-account", files=files)
+                result = await self.app.api_client.post("/api/auth/upload-credentials", files=files)
 
             if result.get("success"):
                 # Set auth token if provided

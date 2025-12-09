@@ -199,16 +199,23 @@ class AuthenticationScreen(Screen):
     ]
 
     def compose(self) -> ComposeResult:
+        import os
+        cwd = os.getcwd()
+
         with Vertical(id="auth-container"):
             yield Label("🔐 Authentication", classes="title")
+            yield Label(f"Current directory: {cwd}", classes="subtitle")
 
             with Vertical(classes="section"):
                 yield Label("📄 Upload Credentials JSON:")
+                yield Label("Examples: backend/credentials.json  or  ~/Documents/creds.json", classes="subtitle")
                 yield Input(
                     placeholder="Path to credentials.json file...",
                     id="credentials-path"
                 )
-                yield Button("Upload JSON", id="upload-json-btn", variant="primary")
+                with Horizontal():
+                    yield Button("Upload JSON", id="upload-json-btn", variant="primary")
+                    yield Button("Use Default Path", id="use-default-btn", variant="default")
 
             with Vertical(classes="section"):
                 yield Label("🔑 Or use Service Account:")
@@ -221,16 +228,28 @@ class AuthenticationScreen(Screen):
             yield Label("", id="auth-status")
             yield Button("Skip (for testing)", id="skip-btn", variant="default")
 
+    @on(Button.Pressed, "#use-default-btn")
+    def use_default_path(self):
+        """Fill input with default credentials path"""
+        path_input = self.query_one("#credentials-path", Input)
+        path_input.value = "backend/credentials.json"
+        self.notify("Default path filled! Press 'Upload JSON' to continue.")
+
     @on(Button.Pressed, "#upload-json-btn")
     async def upload_json_credentials(self):
         """Upload JSON credentials file"""
+        import os
         status = self.query_one("#auth-status", Label)
         path_input = self.query_one("#credentials-path", Input)
 
-        path = Path(path_input.value.strip())
+        # Expand ~ to home directory
+        path_str = os.path.expanduser(path_input.value.strip())
+        path = Path(path_str)
 
         if not path.exists():
-            status.update("❌ File not found!")
+            # Show helpful error with full path attempted
+            abs_path = path.resolve()
+            status.update(f"❌ File not found: {abs_path}")
             return
 
         try:

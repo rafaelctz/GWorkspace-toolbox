@@ -465,7 +465,7 @@ class AliasExtractorScreen(Screen):
             table.clear()
 
             # Call backend API to extract aliases
-            result = await self.app.api_client.post("/api/alias-extractor/extract")
+            result = await self.app.api_client.post("/api/tools/extract-aliases")
 
             if result.get("success"):
                 aliases = result.get("aliases", [])
@@ -492,7 +492,7 @@ class AliasExtractorScreen(Screen):
         try:
             status.update("⏳ Exporting to CSV...")
 
-            result = await self.app.api_client.post("/api/alias-extractor/export")
+            result = await self.app.api_client.get("/api/tools/download-aliases")
 
             if result.get("success"):
                 filename = result.get("filename", "aliases.csv")
@@ -585,7 +585,7 @@ class AttributeInjectorScreen(Screen):
             status.update("⏳ Injecting attributes...")
 
             result = await self.app.api_client.post(
-                "/api/attribute-injector/inject",
+                "/api/tools/inject-attribute",
                 json={"ou_path": ou_path, "attributes": attributes}
             )
 
@@ -667,7 +667,7 @@ class BatchMonitorScreen(Screen):
             status.update("⏳ Loading jobs...")
             table.clear()
 
-            result = await self.app.api_client.get("/api/batch-jobs")
+            result = await self.app.api_client.get("/api/batch/jobs")
 
             if isinstance(result, list):
                 for job in result:
